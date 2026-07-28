@@ -84,7 +84,12 @@
       "Bash(\"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe\" shell input text \"r\")",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git remote:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ]
   }
 }

@@ -1,5 +1,7 @@
 # Miscellaneous
 *.class
+auto_backup.bat
+backup.bat
 *.log
 *.pyc
 *.swp

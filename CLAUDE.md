@@ -77,3 +77,4 @@ Be pragmatic. Be reliable. Self-anneal.
 - **Better models for paying customers**: Offer premium/upgraded AI models for paying subscribers.
 - **Supabase auth & app domain**: Set up proper Supabase authentication, configure app domain, handle auth flows properly.
 - **Merge user_profile and opponents into unified players table**: Add `name` field to user profile, create single `players` table with `is_user` flag, migrate data from both tables, update models/repositories/sync. This reduces code duplication and simplifies the data model.
+- **Learn from football manager apps**: Research popular football manager apps (e.g., FM Mobile, Top Eleven, FotMob) for UX patterns, tactical visualization, player stats presentation, and match preparation features that could translate to tennis tactics.
