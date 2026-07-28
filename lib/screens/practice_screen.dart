@@ -244,7 +244,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   List<TacticBubbleData> get _visibleBubbles {
     if (_showHidden) {
-      return _allBubbles;
+      return _allBubbles.where((b) => b.isHidden).toList();
     } else {
       return _allBubbles.where((b) => !b.isHidden).toList();
     }
