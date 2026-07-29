@@ -89,7 +89,13 @@
       "Bash(git config:*)",
       "Bash(git remote:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(C:/Users/Vlada/AppData/Local/Android/Sdk/platform-tools/adb.exe -s emulator-5554 emu kill)",
+      "Bash($LOCALAPPDATA/Android/Sdk/emulator/emulator.exe -list-avds)",
+      "Bash($LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe emu kill)",
+      "Bash($LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe devices)",
+      "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\")",
+      "WebSearch"
     ]
   }
 }

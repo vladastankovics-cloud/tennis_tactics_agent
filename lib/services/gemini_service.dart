@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:tennis_tactics_agent/config/app_config.dart';
 
 class GeminiService {
+  static const int _maxRetries = 5;
+  static const int _baseDelayMs = 1000;
   final String apiKey;
   final String model;
   late GenerativeModel _model;
@@ -12,7 +15,7 @@ class GeminiService {
 
   GeminiService({
     required this.apiKey,
-    this.model = 'gemini-2.0-flash',
+    this.model = 'gemini-2.5-flash',
   }) {
     _model = GenerativeModel(
       model: model,
@@ -80,6 +83,31 @@ class GeminiService {
     }
   }
 
+  /// Retries an async operation with exponential backoff
+  Future<T> _retryWithBackoff<T>(Future<T> Function() operation) async {
+    int attempt = 0;
+    while (true) {
+      try {
+        return await operation();
+      } catch (e) {
+        attempt++;
+        final errorStr = e.toString().toLowerCase();
+        final isRateLimit = errorStr.contains('429') ||
+            errorStr.contains('rate') ||
+            errorStr.contains('quota') ||
+            errorStr.contains('resource_exhausted');
+
+        if (!isRateLimit || attempt >= _maxRetries) {
+          rethrow;
+        }
+
+        final delayMs = _baseDelayMs * (1 << attempt); // Exponential: 2s, 4s, 8s, 16s, 32s
+        print('Rate limited, retrying in ${delayMs}ms (attempt $attempt/$_maxRetries)');
+        await Future.delayed(Duration(milliseconds: delayMs));
+      }
+    }
+  }
+
   /// Sends a message to Gemini API and returns the response
   Future<Map<String, dynamic>> sendMessage({
     required String message,
@@ -93,8 +121,10 @@ class GeminiService {
         addMessage(role: 'user', content: message);
       }
 
-      // Send message to Gemini
-      final response = await _chat.sendMessage(Content.text(message));
+      // Send message to Gemini with retry
+      final response = await _retryWithBackoff(
+        () => _chat.sendMessage(Content.text(message)),
+      );
       final responseText = response.text ?? '';
 
       // Add assistant's response to history if requested
@@ -108,6 +138,10 @@ class GeminiService {
         'data': response,
       };
     } catch (e) {
+      // Remove user message from history if we added it but failed
+      if (addToHistory && _conversationHistory.isNotEmpty) {
+        removeLastMessage();
+      }
       return {
         'success': false,
         'error': 'Exception occurred: ${e.toString()}',
@@ -151,8 +185,10 @@ class GeminiService {
         addMessage(role: 'user', content: message);
       }
 
-      // Send message to Gemini
-      final response = await _chat.sendMessage(Content.text(message));
+      // Send message to Gemini with retry
+      final response = await _retryWithBackoff(
+        () => _chat.sendMessage(Content.text(message)),
+      );
       final responseText = response.text ?? '';
 
       // Add assistant's response to history if requested
@@ -166,6 +202,10 @@ class GeminiService {
         'data': response,
       };
     } catch (e) {
+      // Remove user message from history if we added it but failed
+      if (addToHistory && _conversationHistory.isNotEmpty) {
+        removeLastMessage();
+      }
       return {
         'success': false,
         'error': 'Exception occurred: ${e.toString()}',

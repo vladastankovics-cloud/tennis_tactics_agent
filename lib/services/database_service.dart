@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 29,
+      version: 30,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -239,6 +239,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE practice_drills (
         id TEXT PRIMARY KEY,
+        user_id TEXT,
         tactic_short_name TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
@@ -611,6 +612,11 @@ class DatabaseService {
       // Add movements and positions columns to practice_drills for court diagrams
       await db.execute('ALTER TABLE practice_drills ADD COLUMN movements TEXT');
       await db.execute('ALTER TABLE practice_drills ADD COLUMN positions TEXT');
+    }
+
+    if (oldVersion < 30) {
+      // Add user_id column to practice_drills for sync support
+      await db.execute('ALTER TABLE practice_drills ADD COLUMN user_id TEXT');
     }
   }
 

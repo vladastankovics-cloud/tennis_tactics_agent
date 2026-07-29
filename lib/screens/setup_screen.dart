@@ -17,7 +17,7 @@ class _SetupScreenState extends State<SetupScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscureText = true;
-  String _selectedModel = GeminiModels.flash25;
+  String _selectedModel = GeminiModels.flash20;
 
   @override
   void dispose() {

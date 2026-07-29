@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/ai_tactic.dart';
@@ -7,6 +8,7 @@ import '../models/message.dart';
 import '../models/user_profile.dart';
 import '../models/opponent.dart';
 import '../models/play_adjustment.dart';
+import '../models/practice_drill.dart';
 
 class SupabaseRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -442,9 +444,108 @@ class SupabaseRepository {
         .eq('user_id', currentUserId!);
   }
 
+  // ==================== PRACTICE DRILLS ====================
+
+  /// Convert PracticeDrill from SQLite format to Supabase format
+  Map<String, dynamic> _practiceDrillToSupabaseMap(PracticeDrill drill) {
+    return {
+      'id': drill.id,
+      'tactic_short_name': drill.tacticShortName,
+      'title': drill.title,
+      'description': drill.description,
+      'duration': drill.duration,
+      'difficulty': drill.difficulty,
+      'order_index': drill.orderIndex,
+      'created_at': drill.createdAt.toUtc().toIso8601String(),
+      'movements': drill.movements != null ? json.encode(drill.movements) : null,
+      'positions': drill.positions != null ? json.encode(drill.positions) : null,
+    };
+  }
+
+  /// Upload practice drills to Supabase
+  Future<void> uploadPracticeDrills(List<PracticeDrill> drills) async {
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      final data = drills.map((drill) {
+        final map = _practiceDrillToSupabaseMap(drill);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
+
+      if (data.isNotEmpty) {
+        debugPrint('🔼 Uploading ${data.length} practice drills to Supabase...');
+        await _supabase.from('practice_drills').upsert(data);
+        debugPrint('✅ Practice drills uploaded successfully');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading practice drills: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Download all practice drills from Supabase
+  Future<List<PracticeDrill>> downloadPracticeDrills() async {
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    final response = await _supabase
+        .from('practice_drills')
+        .select()
+        .eq('user_id', currentUserId!)
+        .order('tactic_short_name', ascending: true)
+        .order('order_index', ascending: true);
+
+    return (response as List).map((json) {
+      // Parse JSON strings back to lists
+      List<Map<String, dynamic>>? movements;
+      if (json['movements'] != null) {
+        final decoded = json['movements'] is String
+            ? jsonDecode(json['movements'] as String)
+            : json['movements'];
+        movements = (decoded as List<dynamic>)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      List<Map<String, dynamic>>? positions;
+      if (json['positions'] != null) {
+        final decoded = json['positions'] is String
+            ? jsonDecode(json['positions'] as String)
+            : json['positions'];
+        positions = (decoded as List<dynamic>)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+
+      return PracticeDrill(
+        id: json['id'] as String,
+        tacticShortName: json['tactic_short_name'] as String,
+        title: json['title'] as String,
+        description: json['description'] as String,
+        duration: json['duration'] as String?,
+        difficulty: json['difficulty'] as String?,
+        orderIndex: json['order_index'] as int? ?? 0,
+        createdAt: DateTime.parse(json['created_at'] as String),
+        movements: movements,
+        positions: positions,
+      );
+    }).toList();
+  }
+
+  /// Delete practice drills for a tactic from Supabase
+  Future<void> deletePracticeDrillsForTactic(String tacticShortName) async {
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    await _supabase
+        .from('practice_drills')
+        .delete()
+        .eq('tactic_short_name', tacticShortName)
+        .eq('user_id', currentUserId!);
+  }
+
   // ==================== BATCH OPERATIONS ====================
 
-  /// Upload all data (matches, conversations, messages, user_profile, opponents, adjustments, ai_tactics)
+  /// Upload all data (matches, conversations, messages, user_profile, opponents, adjustments, ai_tactics, practice_drills)
   Future<void> uploadAll({
     required List<Match> matches,
     required List<Conversation> conversations,
@@ -453,6 +554,7 @@ class SupabaseRepository {
     List<Opponent>? opponents,
     List<PlayAdjustment>? playAdjustments,
     List<AiTactic>? aiTactics,
+    List<PracticeDrill>? practiceDrills,
   }) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
@@ -490,6 +592,11 @@ class SupabaseRepository {
     // 7. AI tactics (depends on conversations and matches)
     if (aiTactics != null && aiTactics.isNotEmpty) {
       await uploadAiTactics(aiTactics);
+    }
+
+    // 8. Practice drills (no dependencies)
+    if (practiceDrills != null && practiceDrills.isNotEmpty) {
+      await uploadPracticeDrills(practiceDrills);
     }
   }
 
@@ -553,6 +660,11 @@ class SupabaseRepository {
         .select()
         .eq('user_id', currentUserId!) as List;
 
+    final practiceDrillsData = await _supabase
+        .from('practice_drills')
+        .select()
+        .eq('user_id', currentUserId!) as List;
+
     return {
       'matches': matchesData.length,
       'conversations': conversationsData.length,
@@ -561,6 +673,7 @@ class SupabaseRepository {
       'opponents': opponentsData.length,
       'play_adjustments': adjustmentsData.length,
       'ai_tactics': aiTacticsData.length,
+      'practice_drills': practiceDrillsData.length,
     };
   }
 }

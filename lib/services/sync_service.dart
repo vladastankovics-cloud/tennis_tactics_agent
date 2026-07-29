@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../models/message.dart';
 import '../repositories/ai_tactic_repository.dart';
@@ -6,6 +7,7 @@ import '../repositories/conversation_repository.dart';
 import '../repositories/user_profile_repository.dart';
 import '../repositories/opponent_repository.dart';
 import '../repositories/play_adjustment_repository.dart';
+import '../repositories/practice_drill_repository.dart';
 import '../repositories/supabase_repository.dart';
 import '../services/database_service.dart';
 import 'auth_service.dart';
@@ -32,6 +34,8 @@ class SyncService {
   final PlayAdjustmentRepository _playAdjustmentRepository =
       PlayAdjustmentRepository();
   final AiTacticRepository _aiTacticRepository = AiTacticRepository();
+  final PracticeDrillRepository _practiceDrillRepository =
+      PracticeDrillRepository();
   final SupabaseRepository _supabaseRepository = SupabaseRepository();
   final DatabaseService _databaseService = DatabaseService.instance;
 
@@ -115,6 +119,8 @@ class SyncService {
     final localAdjustments = await _playAdjustmentRepository.getAllAdjustments();
     debugPrint('📦 Fetching local AI tactics...');
     final localAiTactics = await _aiTacticRepository.getTacticsForAllMatches();
+    debugPrint('📦 Fetching local practice drills...');
+    final localPracticeDrills = await _practiceDrillRepository.getAllDrills();
 
     // Get conversation IDs to fetch messages
     final conversationIds = localConversations.map((c) => c.id).toList();
@@ -168,6 +174,12 @@ class SyncService {
       where: 'user_id IS NULL OR user_id = ?',
       whereArgs: [''],
     );
+    await db.update(
+      'practice_drills',
+      {'user_id': userId},
+      where: 'user_id IS NULL OR user_id = ?',
+      whereArgs: [''],
+    );
 
     // Upload to Supabase
     await _supabaseRepository.uploadAll(
@@ -178,6 +190,7 @@ class SyncService {
       opponents: localOpponents,
       playAdjustments: localAdjustments,
       aiTactics: localAiTactics,
+      practiceDrills: localPracticeDrills,
     );
 
     // Update last_synced timestamps
@@ -213,7 +226,8 @@ class SyncService {
         '${localUserProfile != null ? 1 : 0} user profile, '
         '${localOpponents.length} opponents, '
         '${localAdjustments.length} adjustments, '
-        '${localAiTactics.length} ai tactics');
+        '${localAiTactics.length} ai tactics, '
+        '${localPracticeDrills.length} practice drills');
   }
 
   /// Download remote data from Supabase
@@ -228,6 +242,7 @@ class SyncService {
     final remoteOpponents = await _supabaseRepository.downloadOpponents();
     final remoteAdjustments = await _supabaseRepository.downloadPlayAdjustments();
     final remoteAiTactics = await _supabaseRepository.downloadAiTactics();
+    final remotePracticeDrills = await _supabaseRepository.downloadPracticeDrills();
 
     // Get local data for comparison
     final localMatches = await _matchRepository.getAllMatches();
@@ -236,12 +251,14 @@ class SyncService {
     final localOpponents = await _opponentRepository.getAllOpponents();
     final localAdjustments = await _playAdjustmentRepository.getAllAdjustments();
     final localAiTactics = await _aiTacticRepository.getTacticsForAllMatches();
+    final localPracticeDrills = await _practiceDrillRepository.getAllDrills();
 
     final localMatchIds = localMatches.map((m) => m.id).toSet();
     final localConvIds = localConversations.map((c) => c.id).toSet();
     final localOpponentIds = localOpponents.map((o) => o.id).toSet();
     final localAdjustmentIds = localAdjustments.map((a) => a.id).toSet();
     final localAiTacticIds = localAiTactics.map((t) => t.id).toSet();
+    final localPracticeDrillIds = localPracticeDrills.map((d) => d.id).toSet();
 
     // Find new items to insert
     final newMatches = remoteMatches.where((m) => !localMatchIds.contains(m.id)).toList();
@@ -249,15 +266,23 @@ class SyncService {
     final newOpponents = remoteOpponents.where((o) => !localOpponentIds.contains(o.id)).toList();
     final newAdjustments = remoteAdjustments.where((a) => !localAdjustmentIds.contains(a.id)).toList();
     final newAiTactics = remoteAiTactics.where((t) => !localAiTacticIds.contains(t.id)).toList();
+    final newPracticeDrills = remotePracticeDrills.where((d) => !localPracticeDrillIds.contains(d.id)).toList();
 
     // Insert new data into local database
     final db = await _databaseService.database;
 
     // Download user profile (upsert - replace if exists)
-    if (remoteUserProfile != null && localUserProfile == null) {
+    if (remoteUserProfile != null) {
       final map = remoteUserProfile.toMap();
       map['user_id'] = userId;
-      await db.insert('user_profile', map);
+      // Use rawInsert with ON CONFLICT to handle both insert and update
+      final columns = map.keys.join(', ');
+      final placeholders = map.keys.map((_) => '?').join(', ');
+      final updateSet = map.keys.where((k) => k != 'id').map((k) => '$k = excluded.$k').join(', ');
+      await db.rawInsert(
+        'INSERT INTO user_profile ($columns) VALUES ($placeholders) ON CONFLICT(id) DO UPDATE SET $updateSet',
+        map.values.toList(),
+      );
     }
 
     // Download opponents
@@ -312,13 +337,28 @@ class SyncService {
       await db.insert('ai_tactics', map);
     }
 
+    // Download practice drills
+    for (var drill in newPracticeDrills) {
+      final map = drill.toMap();
+      map['user_id'] = userId;
+      // Encode movements and positions as JSON strings for SQLite
+      if (map['movements'] != null && map['movements'] is! String) {
+        map['movements'] = json.encode(map['movements']);
+      }
+      if (map['positions'] != null && map['positions'] is! String) {
+        map['positions'] = json.encode(map['positions']);
+      }
+      await db.insert('practice_drills', map);
+    }
+
     debugPrint('✅ Downloaded ${newMatches.length} new matches, '
         '${newConversations.length} new conversations, '
         '${remoteMessages.length} messages, '
         '${remoteUserProfile != null && localUserProfile == null ? 1 : 0} user profile, '
         '${newOpponents.length} opponents, '
         '${newAdjustments.length} adjustments, '
-        '${newAiTactics.length} ai tactics');
+        '${newAiTactics.length} ai tactics, '
+        '${newPracticeDrills.length} practice drills');
   }
 
   /// Quick sync - only upload new/modified local data
@@ -427,6 +467,7 @@ class SyncService {
     final localOpponents = (await _opponentRepository.getAllOpponents()).length;
     final localAdjustments = (await _playAdjustmentRepository.getAllAdjustments()).length;
     final localAiTactics = (await _aiTacticRepository.getTacticsForAllMatches()).length;
+    final localPracticeDrills = (await _practiceDrillRepository.getAllDrills()).length;
 
     final local = {
       'matches': localMatches,
@@ -436,6 +477,7 @@ class SyncService {
       'opponents': localOpponents,
       'play_adjustments': localAdjustments,
       'ai_tactics': localAiTactics,
+      'practice_drills': localPracticeDrills,
     };
 
     Map<String, int>? remote;
