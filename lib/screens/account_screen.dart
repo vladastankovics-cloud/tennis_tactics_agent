@@ -475,6 +475,14 @@ class _AccountScreenState extends State<AccountScreen> {
                             theme,
                           ),
                           const SizedBox(height: 12),
+                          // Practice Drills row
+                          _buildDataRow(
+                            'Drills',
+                            _syncInfo!['local']?['practice_drills']?.toString() ?? '-',
+                            _syncInfo!['remote']?['practice_drills']?.toString() ?? '-',
+                            theme,
+                          ),
+                          const SizedBox(height: 12),
                           // Conversations row
                           _buildDataRow(
                             'Conversations',

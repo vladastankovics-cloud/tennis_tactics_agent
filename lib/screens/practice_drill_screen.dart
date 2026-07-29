@@ -151,6 +151,8 @@ Each drill should:
 - Be specific and actionable
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
+- In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
+- ONLY include "positions" and "movements" if the drill involves a specific shot pattern that can be visualized (e.g., cross-court rally, approach shot pattern). For general fitness drills, solo practice, or drills without specific court positions, set positions and movements to empty arrays []
 
 Format your response as ONLY a JSON array with no other text:
 [
@@ -566,6 +568,8 @@ Each drill should:
 - Be specific and actionable
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
+- In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
+- ONLY include "positions" and "movements" if the drill involves a specific shot pattern that can be visualized (e.g., cross-court rally, approach shot pattern). For general fitness drills, solo practice, or drills without specific court positions, set positions and movements to empty arrays []
 
 Format your response as ONLY a JSON array with no other text:
 [

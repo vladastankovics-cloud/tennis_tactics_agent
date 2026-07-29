@@ -293,6 +293,19 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     CourtMovement? currentBallMovement;
     double currentBallProgress = 0.0;
 
+    // First pass: find the previous ball movement index for fading
+    int previousBallMovementIndex = -1;
+    int currentBallMovementIndex = -1;
+    for (int i = 0; i < totalMovements; i++) {
+      if (movements[i].type == 'ball') {
+        if (i < clampedIndex) {
+          previousBallMovementIndex = i;
+        } else if (i == clampedIndex) {
+          currentBallMovementIndex = i;
+        }
+      }
+    }
+
     for (int i = 0; i < totalMovements; i++) {
       final movement = movements[i];
       final isBall = movement.type == 'ball';
@@ -300,9 +313,13 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       if (isBall) ballIndex++;
 
       if (i < clampedIndex) {
-        // Fully completed movement - only draw ball trajectories (no player/opponent arrows)
-        if (isBall) {
-          _drawBallTrajectory(canvas, size, movement, 1.0);
+        // Completed movement - only draw the previous ball trajectory with fading
+        if (isBall && i == previousBallMovementIndex) {
+          // Fade out the previous shot as the current one progresses
+          final fadeOpacity = currentBallMovementIndex >= 0
+              ? (1.0 - movementLocalProgress * 0.8).clamp(0.2, 1.0)
+              : 1.0;
+          _drawBallTrajectoryWithOpacity(canvas, size, movement, 1.0, fadeOpacity);
         }
 
         // Update positions after movement completes
@@ -438,7 +455,12 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
 
   // Draw ball trajectory (yellow dashed line) without labels
   void _drawBallTrajectory(Canvas canvas, Size size, CourtMovement movement, double progress) {
-    if (progress <= 0) return;
+    _drawBallTrajectoryWithOpacity(canvas, size, movement, progress, 1.0);
+  }
+
+  // Draw ball trajectory with opacity for fading effect
+  void _drawBallTrajectoryWithOpacity(Canvas canvas, Size size, CourtMovement movement, double progress, double opacity) {
+    if (progress <= 0 || opacity <= 0) return;
 
     final from = _courtToCanvas(size, movement.fromX, movement.fromY);
     final fullTo = _courtToCanvas(size, movement.toX, movement.toY);
@@ -448,20 +470,23 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       _lerp(from.dy, fullTo.dy, progress),
     );
 
+    final color = ballColor.withOpacity(opacity);
     final arrowPaint = Paint()
-      ..color = ballColor
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;
 
     _drawDashedLine(canvas, from, to, arrowPaint);
 
-    if (progress > 0.8) {
-      _drawArrowhead(canvas, from, to, ballColor);
+    // Always show arrowhead at the current ball position
+    if (progress > 0.05) {
+      _drawArrowhead(canvas, from, to, color);
     }
   }
 
   // Draw spinning tennis ball with seam lines showing spin type
+  // Rotation is based on travel direction and spin type
   void _drawSpinningBall(Canvas canvas, Size size, CourtMovement movement, double progress, double totalProgress) {
     final fromPos = _courtToCanvas(size, movement.fromX, movement.fromY);
     final toPos = _courtToCanvas(size, movement.toX, movement.toY);
@@ -474,10 +499,16 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
 
     final ballRadius = 10.0;
 
+    // Calculate travel direction angle (from source to destination)
+    final dx = toPos.dx - fromPos.dx;
+    final dy = toPos.dy - fromPos.dy;
+    final travelAngle = math.atan2(dy, dx);
+
     // Determine spin type from shot label
     final shotLabel = movement.shotLabel?.toUpperCase() ?? '';
     final isSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
     final isFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
+    final isSidespin = shotLabel.contains('SS') || shotLabel.contains('SIDE');
 
     // Draw ball shadow
     final shadowPaint = Paint()
@@ -494,51 +525,68 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // Calculate rotation based on spin type
-    // Rotate around axis perpendicular to ball travel direction
-    double rotationAngle;
-    if (isSlice) {
-      // Backspin - rotate opposite to travel
-      rotationAngle = -totalProgress * 8 * math.pi;
+    // First, rotate canvas to align with travel direction
+    // This makes the seam rotation relative to ball's path
+    canvas.rotate(travelAngle + math.pi / 2);
+
+    // Calculate spin rotation based on type
+    // The ball "rolls" along its travel path
+    // - Topspin: forward roll (top of ball moves in travel direction)
+    // - Slice/Backspin: backward roll (top of ball moves opposite to travel)
+    // - Sidespin: rotation perpendicular to travel
+    // - Flat: minimal rotation
+
+    double spinRotation;
+    if (isSidespin) {
+      // Sidespin - rotate around vertical axis (we simulate with horizontal rotation)
+      spinRotation = progress * 6 * math.pi;
+    } else if (isSlice) {
+      // Backspin - ball rotates backward relative to travel direction
+      // Top of ball moves opposite to travel = negative rotation
+      spinRotation = -progress * 8 * math.pi;
     } else if (isFlat) {
-      // Minimal spin
-      rotationAngle = totalProgress * 2 * math.pi;
+      // Flat - minimal rotation
+      spinRotation = progress * 2 * math.pi;
     } else {
-      // Topspin - rotate with travel direction
-      rotationAngle = totalProgress * 12 * math.pi;
+      // Topspin (default) - ball rotates forward relative to travel direction
+      // Top of ball moves with travel = positive rotation
+      spinRotation = progress * 10 * math.pi;
     }
 
-    canvas.rotate(rotationAngle);
+    canvas.rotate(spinRotation);
 
-    // Draw the white seam - simplified but recognizable tennis ball pattern
+    // Draw realistic tennis ball seam pattern
+    // Tennis ball has two interlocking curved seams that form a figure-8 pattern
     final seamPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
+      ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round;
 
-    final r = ballRadius * 0.9;
+    final r = ballRadius * 0.85;
 
-    // Draw two curved seams that create the tennis ball look
-    // Left curve
-    final leftSeam = Path();
-    leftSeam.moveTo(-r * 0.15, -r * 0.85);
-    leftSeam.cubicTo(
-      -r * 0.8, -r * 0.5,
-      -r * 0.8, r * 0.5,
-      -r * 0.15, r * 0.85,
-    );
-    canvas.drawPath(leftSeam, seamPaint);
+    // Draw the characteristic tennis ball seam curves
+    // These create the peanut-shell shape when viewed from the side
 
-    // Right curve
-    final rightSeam = Path();
-    rightSeam.moveTo(r * 0.15, -r * 0.85);
-    rightSeam.cubicTo(
-      r * 0.8, -r * 0.5,
-      r * 0.8, r * 0.5,
-      r * 0.15, r * 0.85,
+    // First seam curve (left side, curves outward)
+    final seam1 = Path();
+    seam1.moveTo(0, -r);
+    seam1.cubicTo(
+      -r * 0.9, -r * 0.6,
+      -r * 0.9, r * 0.6,
+      0, r,
     );
-    canvas.drawPath(rightSeam, seamPaint);
+    canvas.drawPath(seam1, seamPaint);
+
+    // Second seam curve (right side, curves outward)
+    final seam2 = Path();
+    seam2.moveTo(0, -r);
+    seam2.cubicTo(
+      r * 0.9, -r * 0.6,
+      r * 0.9, r * 0.6,
+      0, r,
+    );
+    canvas.drawPath(seam2, seamPaint);
 
     canvas.restore();
 

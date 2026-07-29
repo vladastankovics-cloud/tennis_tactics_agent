@@ -136,6 +136,6 @@ class PracticeDrillRepository {
       _tableName,
       orderBy: 'tactic_short_name, order_index ASC',
     );
-    return maps.map((map) => PracticeDrill.fromMap(map)).toList();
+    return maps.map((map) => _drillFromDbMap(map)).toList();
   }
 }
