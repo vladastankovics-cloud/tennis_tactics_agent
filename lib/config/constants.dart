@@ -69,22 +69,28 @@ class ClaudeModels {
 
 /// Available Gemini AI models
 class GeminiModels {
-  /// Gemini 2.5 Flash - Latest and most capable flash model
-  static const String flash25 = 'gemini-2.5-flash';
+  /// Gemini 2.0 Flash - Latest flash model
+  static const String flash20 = 'gemini-2.0-flash';
+
+  /// Gemini 1.5 Flash - Stable flash model
+  static const String flash15 = 'gemini-1.5-flash';
 
   /// All available models
   static const List<String> all = [
-    flash25,
+    flash20,
+    flash15,
   ];
 
   /// Model display names for UI
   static const Map<String, String> displayNames = {
-    flash25: 'Gemini 2.5 Flash',
+    flash20: 'Gemini 2.0 Flash',
+    flash15: 'Gemini 1.5 Flash',
   };
 
   /// Model descriptions
   static const Map<String, String> descriptions = {
-    flash25: 'Latest flash model - fast and capable',
+    flash20: 'Latest flash model - fast and capable',
+    flash15: 'Stable flash model - reliable performance',
   };
 
   /// Get display name for a model

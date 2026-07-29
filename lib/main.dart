@@ -21,7 +21,7 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: 'https://hzmhiitjcwwmlvwfnvea.supabase.co',
-    anonKey: 'sb_publishable_qzLpQNV7Z1S1sUlBIOri-g_HVHk-kKs',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6bWhpaXRqY3d3bWx2d2ZudmVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNzIyMDYsImV4cCI6MjA4MzY0ODIwNn0.8nUy_Ayl0FtfWMD0WwzCW-guhEXdKRV2uSP3rNlX-LM',
   );
 
   runApp(const TennisTacticsApp());

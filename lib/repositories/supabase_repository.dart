@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/ai_tactic.dart';
 import '../models/match.dart';
@@ -74,13 +75,21 @@ class SupabaseRepository {
   Future<void> uploadMatches(List<Match> matches) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = matches.map((match) {
-      final map = _matchToSupabaseMap(match);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = matches.map((match) {
+        final map = _matchToSupabaseMap(match);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    await _supabase.from('matches').upsert(data);
+      debugPrint('🔼 Uploading ${data.length} matches to Supabase...');
+      await _supabase.from('matches').upsert(data);
+      debugPrint('✅ Matches uploaded successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading matches: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Download all matches from Supabase
@@ -113,13 +122,21 @@ class SupabaseRepository {
   Future<void> uploadConversations(List<Conversation> conversations) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = conversations.map((conversation) {
-      final map = _conversationToSupabaseMap(conversation);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = conversations.map((conversation) {
+        final map = _conversationToSupabaseMap(conversation);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    await _supabase.from('conversations').upsert(data);
+      debugPrint('🔼 Uploading ${data.length} conversations to Supabase...');
+      await _supabase.from('conversations').upsert(data);
+      debugPrint('✅ Conversations uploaded successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading conversations: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Download all conversations from Supabase
@@ -154,13 +171,21 @@ class SupabaseRepository {
   Future<void> uploadMessages(List<Message> messages) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = messages.map((message) {
-      final map = _messageToSupabaseMap(message);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = messages.map((message) {
+        final map = _messageToSupabaseMap(message);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    await _supabase.from('messages').upsert(data);
+      debugPrint('🔼 Uploading ${data.length} messages to Supabase...');
+      await _supabase.from('messages').upsert(data);
+      debugPrint('✅ Messages uploaded successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading messages: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Download messages for specific conversations
@@ -208,12 +233,21 @@ class SupabaseRepository {
   Future<void> uploadUserProfile(UserProfile profile) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final map = _userProfileToSupabaseMap(profile);
-    // Use the Supabase user_id as the profile id (instead of local "me")
-    map['id'] = currentUserId;
-    map['user_id'] = currentUserId;
+    try {
+      final map = _userProfileToSupabaseMap(profile);
+      // Use the Supabase user_id as the profile id (instead of local "me")
+      map['id'] = currentUserId;
+      map['user_id'] = currentUserId;
 
-    await _supabase.from('user_profile').upsert(map);
+      debugPrint('🔼 Uploading user profile to Supabase...');
+      debugPrint('   Profile data: $map');
+      await _supabase.from('user_profile').upsert(map);
+      debugPrint('✅ User profile uploaded successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading user profile: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Download user profile from Supabase
@@ -247,14 +281,22 @@ class SupabaseRepository {
   Future<void> uploadOpponents(List<Opponent> opponents) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = opponents.map((opponent) {
-      final map = _opponentToSupabaseMap(opponent);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = opponents.map((opponent) {
+        final map = _opponentToSupabaseMap(opponent);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    if (data.isNotEmpty) {
-      await _supabase.from('opponents').upsert(data);
+      if (data.isNotEmpty) {
+        debugPrint('🔼 Uploading ${data.length} opponents to Supabase...');
+        await _supabase.from('opponents').upsert(data);
+        debugPrint('✅ Opponents uploaded successfully');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading opponents: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 
@@ -298,14 +340,22 @@ class SupabaseRepository {
   Future<void> uploadPlayAdjustments(List<PlayAdjustment> adjustments) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = adjustments.map((adjustment) {
-      final map = _playAdjustmentToSupabaseMap(adjustment);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = adjustments.map((adjustment) {
+        final map = _playAdjustmentToSupabaseMap(adjustment);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    if (data.isNotEmpty) {
-      await _supabase.from('play_adjustments').upsert(data);
+      if (data.isNotEmpty) {
+        debugPrint('🔼 Uploading ${data.length} play adjustments to Supabase...');
+        await _supabase.from('play_adjustments').upsert(data);
+        debugPrint('✅ Play adjustments uploaded successfully');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading play adjustments: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 
@@ -349,14 +399,22 @@ class SupabaseRepository {
   Future<void> uploadAiTactics(List<AiTactic> tactics) async {
     if (currentUserId == null) throw Exception('User not authenticated');
 
-    final data = tactics.map((tactic) {
-      final map = _aiTacticToSupabaseMap(tactic);
-      map['user_id'] = currentUserId;
-      return map;
-    }).toList();
+    try {
+      final data = tactics.map((tactic) {
+        final map = _aiTacticToSupabaseMap(tactic);
+        map['user_id'] = currentUserId;
+        return map;
+      }).toList();
 
-    if (data.isNotEmpty) {
-      await _supabase.from('ai_tactics').upsert(data);
+      if (data.isNotEmpty) {
+        debugPrint('🔼 Uploading ${data.length} AI tactics to Supabase...');
+        await _supabase.from('ai_tactics').upsert(data);
+        debugPrint('✅ AI tactics uploaded successfully');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error uploading AI tactics: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 

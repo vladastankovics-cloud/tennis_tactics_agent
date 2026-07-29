@@ -12,7 +12,7 @@ class GeminiService {
 
   GeminiService({
     required this.apiKey,
-    this.model = 'gemini-2.5-flash',
+    this.model = 'gemini-2.0-flash',
   }) {
     _model = GenerativeModel(
       model: model,

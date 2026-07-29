@@ -103,11 +103,17 @@ class SyncService {
     debugPrint('⬆️  Uploading local data...');
 
     // Get all local data
+    debugPrint('📦 Fetching local matches...');
     final localMatches = await _matchRepository.getAllMatches();
+    debugPrint('📦 Fetching local conversations...');
     final localConversations = await _conversationRepository.getAllConversations();
+    debugPrint('📦 Fetching local user profile...');
     final localUserProfile = await _userProfileRepository.getProfile();
+    debugPrint('📦 Fetching local opponents...');
     final localOpponents = await _opponentRepository.getAllOpponents();
+    debugPrint('📦 Fetching local adjustments...');
     final localAdjustments = await _playAdjustmentRepository.getAllAdjustments();
+    debugPrint('📦 Fetching local AI tactics...');
     final localAiTactics = await _aiTacticRepository.getTacticsForAllMatches();
 
     // Get conversation IDs to fetch messages

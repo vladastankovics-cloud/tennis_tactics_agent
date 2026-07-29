@@ -171,9 +171,9 @@ class AppConfig {
   Future<String> getGeminiModel() async {
     try {
       final model = await _secureStorage.read(key: _geminiModelKey);
-      return model ?? 'gemini-2.5-flash';
+      return model ?? 'gemini-2.0-flash';
     } catch (e) {
-      return 'gemini-2.5-flash';
+      return 'gemini-2.0-flash';
     }
   }
 
