@@ -385,43 +385,25 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
         } else if (isBall) {
           // Determine who hit and who receives
           final playerHit = movement.fromY > 0.5;
-          final isVolley = movement.shotLabel?.toUpperCase().contains('VOL') ?? false;
-          final isApproach = movement.fromY > 0.4 && movement.fromY < 0.6;
 
           if (playerHit) {
-            // Player hit - opponent moves to ball, player recovers
+            // Player hit the ball - opponent moves to intercept, player STAYS at hitting position
             final targetOpponentY = math.min(movement.toY, 0.45);
             animOpponentX = _lerp(prevOpponentX, movement.toX, easedProgress);
             animOpponentY = _lerp(prevOpponentY, targetOpponentY, easedProgress);
 
-            // Player recovers toward center or net
-            double targetPlayerX, targetPlayerY;
-            if (isVolley || isApproach) {
-              targetPlayerX = _lerp(prevPlayerX, 0.5, 0.5);
-              targetPlayerY = math.min(prevPlayerY, 0.6);
-            } else {
-              targetPlayerX = _lerp(prevPlayerX, 0.5, 0.6);
-              targetPlayerY = 0.82;
-            }
-            animPlayerX = _lerp(prevPlayerX, targetPlayerX, easedProgress);
-            animPlayerY = _lerp(prevPlayerY, targetPlayerY, easedProgress);
+            // Player stays at their current position (where they hit from)
+            animPlayerX = prevPlayerX;
+            animPlayerY = prevPlayerY;
           } else {
-            // Opponent hit - player moves to ball, opponent recovers
+            // Opponent hit the ball - player moves to intercept, opponent STAYS at hitting position
             final targetPlayerY = math.max(movement.toY, 0.55);
             animPlayerX = _lerp(prevPlayerX, movement.toX, easedProgress);
             animPlayerY = _lerp(prevPlayerY, targetPlayerY, easedProgress);
 
-            // Opponent recovers toward center or net
-            double targetOpponentX, targetOpponentY;
-            if (isVolley || isApproach) {
-              targetOpponentX = _lerp(prevOpponentX, 0.5, 0.5);
-              targetOpponentY = math.max(prevOpponentY, 0.4);
-            } else {
-              targetOpponentX = _lerp(prevOpponentX, 0.5, 0.6);
-              targetOpponentY = 0.18;
-            }
-            animOpponentX = _lerp(prevOpponentX, targetOpponentX, easedProgress);
-            animOpponentY = _lerp(prevOpponentY, targetOpponentY, easedProgress);
+            // Opponent stays at their current position (where they hit from)
+            animOpponentX = prevOpponentX;
+            animOpponentY = prevOpponentY;
           }
         }
       }
@@ -506,9 +488,11 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
 
     // Determine spin type from shot label
     final shotLabel = movement.shotLabel?.toUpperCase() ?? '';
-    final isSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
-    final isFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
-    final isSidespin = shotLabel.contains('SS') || shotLabel.contains('SIDE');
+    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP');
+    final hasSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
+    final hasFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
+    final hasSidespin = shotLabel.contains('SS') || shotLabel.contains('SIDE') || shotLabel.contains('KICK');
+    final hasAnySpin = hasTopspin || hasSlice || hasFlat || hasSidespin;
 
     // Draw ball shadow
     final shadowPaint = Paint()
@@ -516,77 +500,72 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX + 2, currentY + 2), ballRadius, shadowPaint);
 
-    // Draw tennis ball - bright fluorescent yellow-green
+    // Draw tennis ball - fluorescent yellow-green
     final ballPaint = Paint()
-      ..color = const Color(0xFFCFFF04) // Bright tennis ball yellow
+      ..color = const Color(0xFFCCFF00) // Tennis ball yellow-green
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX, currentY), ballRadius, ballPaint);
 
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // First, rotate canvas to align with travel direction
-    // This makes the seam rotation relative to ball's path
-    canvas.rotate(travelAngle + math.pi / 2);
+    // Only apply spin rotation if spin type is specified
+    double spinRotation = 0.0;
+    if (hasAnySpin) {
+      // Align with travel direction first
+      canvas.rotate(travelAngle + math.pi / 2);
 
-    // Calculate spin rotation based on type
-    // The ball "rolls" along its travel path
-    // - Topspin: forward roll (top of ball moves in travel direction)
-    // - Slice/Backspin: backward roll (top of ball moves opposite to travel)
-    // - Sidespin: rotation perpendicular to travel
-    // - Flat: minimal rotation
+      // Calculate spin rotation based on type
+      if (hasSidespin) {
+        // Sidespin/kick - horizontal axis rotation
+        spinRotation = progress * 6 * math.pi;
+      } else if (hasSlice) {
+        // Backspin - rotates backward (top moves opposite to travel)
+        spinRotation = -progress * 8 * math.pi;
+      } else if (hasFlat) {
+        // Flat - very minimal rotation
+        spinRotation = progress * 1 * math.pi;
+      } else if (hasTopspin) {
+        // Topspin - rotates forward (top moves with travel direction)
+        spinRotation = progress * 10 * math.pi;
+      }
 
-    double spinRotation;
-    if (isSidespin) {
-      // Sidespin - rotate around vertical axis (we simulate with horizontal rotation)
-      spinRotation = progress * 6 * math.pi;
-    } else if (isSlice) {
-      // Backspin - ball rotates backward relative to travel direction
-      // Top of ball moves opposite to travel = negative rotation
-      spinRotation = -progress * 8 * math.pi;
-    } else if (isFlat) {
-      // Flat - minimal rotation
-      spinRotation = progress * 2 * math.pi;
-    } else {
-      // Topspin (default) - ball rotates forward relative to travel direction
-      // Top of ball moves with travel = positive rotation
-      spinRotation = progress * 10 * math.pi;
+      canvas.rotate(spinRotation);
     }
 
-    canvas.rotate(spinRotation);
-
     // Draw realistic tennis ball seam pattern
-    // Tennis ball has two interlocking curved seams that form a figure-8 pattern
+    // A tennis ball has a curved seam that wraps around in a figure-8/infinity pattern
+    // When viewed from one angle, it looks like two curved lines forming a "peanut" shape
     final seamPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
+      ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
 
-    final r = ballRadius * 0.85;
+    final r = ballRadius * 0.88;
 
-    // Draw the characteristic tennis ball seam curves
-    // These create the peanut-shell shape when viewed from the side
+    // Tennis ball seam pattern - the characteristic curved white line
+    // The seam creates an hourglass/figure-8 shape when viewed from the side
 
-    // First seam curve (left side, curves outward)
-    final seam1 = Path();
-    seam1.moveTo(0, -r);
-    seam1.cubicTo(
-      -r * 0.9, -r * 0.6,
-      -r * 0.9, r * 0.6,
-      0, r,
+    // Left curved seam
+    final leftSeam = Path();
+    leftSeam.moveTo(-r * 0.1, -r * 0.95);
+    leftSeam.cubicTo(
+      -r * 0.85, -r * 0.5,   // control point 1 - bulges left at top
+      -r * 0.85, r * 0.5,    // control point 2 - bulges left at bottom
+      -r * 0.1, r * 0.95,    // end point
     );
-    canvas.drawPath(seam1, seamPaint);
+    canvas.drawPath(leftSeam, seamPaint);
 
-    // Second seam curve (right side, curves outward)
-    final seam2 = Path();
-    seam2.moveTo(0, -r);
-    seam2.cubicTo(
-      r * 0.9, -r * 0.6,
-      r * 0.9, r * 0.6,
-      0, r,
+    // Right curved seam (mirror)
+    final rightSeam = Path();
+    rightSeam.moveTo(r * 0.1, -r * 0.95);
+    rightSeam.cubicTo(
+      r * 0.85, -r * 0.5,    // control point 1 - bulges right at top
+      r * 0.85, r * 0.5,     // control point 2 - bulges right at bottom
+      r * 0.1, r * 0.95,     // end point
     );
-    canvas.drawPath(seam2, seamPaint);
+    canvas.drawPath(rightSeam, seamPaint);
 
     canvas.restore();
 

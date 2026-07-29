@@ -152,26 +152,40 @@ Each drill should:
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
-- ONLY include "positions" and "movements" if the drill involves a specific shot pattern that can be visualized (e.g., cross-court rally, approach shot pattern). For general fitness drills, solo practice, or drills without specific court positions, set positions and movements to empty arrays []
 
-Format your response as ONLY a JSON array with no other text:
+CRITICAL - DIAGRAM DECISION:
+You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
+- YES specific locations → include positions and movements arrays with the pattern
+- NO specific locations → set "positions": [] and "movements": []
+
+DO NOT include diagrams for:
+- General rallying without shot direction ("hit forehands back and forth")
+- Fitness/footwork/conditioning drills
+- Serve practice without specific return patterns
+- Mental focus or breathing exercises
+- Any drill where you don't specify WHERE on court each shot lands
+
+Format your response as ONLY a JSON array:
 [
   {
     "title": "Drill name (2-4 words)",
-    "description": "Clear step-by-step instructions for the drill. Include setup, execution, and what to focus on. 2-4 sentences.",
+    "description": "Instructions. If including diagram, description MUST say where each shot goes.",
     "duration": "X-Y minutes",
     "difficulty": "$level",
-    "positions": [
-      {"x": 0.5, "y": 0.82, "label": "P"},
-      {"x": 0.5, "y": 0.18, "label": "O"}
-    ],
-    "movements": [
-      {"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.7}, "type": "player"},
-      {"from": {"x": 0.5, "y": 0.18}, "to": {"x": 0.25, "y": 0.7}, "type": "opponent"},
-      {"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.7, "y": 0.25}, "type": "ball", "shot": "FHCC"}
-    ]
+    "positions": [],
+    "movements": []
   }
 ]
+
+Example WITH diagram (description specifies locations):
+  "description": "Player hits deep cross-court forehand to Opponent's backhand corner. Opponent returns down-the-line. Player moves and hits inside-out forehand to deuce side.",
+  "positions": [{"x": 0.5, "y": 0.82, "label": "P"}, {"x": 0.5, "y": 0.18, "label": "O"}],
+  "movements": [{"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.2}, "type": "ball", "shot": "FHCC"}]
+
+Example WITHOUT diagram (no specific locations):
+  "description": "Practice approach shots and volleys. Focus on split-stepping and quick reactions at net.",
+  "positions": [],
+  "movements": []
 
 ## Court Layout (coordinates 0.0 to 1.0)
 The diagram shows full court with green surround area:
@@ -569,24 +583,28 @@ Each drill should:
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
-- ONLY include "positions" and "movements" if the drill involves a specific shot pattern that can be visualized (e.g., cross-court rally, approach shot pattern). For general fitness drills, solo practice, or drills without specific court positions, set positions and movements to empty arrays []
 
-Format your response as ONLY a JSON array with no other text:
+CRITICAL - DIAGRAM DECISION:
+You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
+- YES specific locations → include positions and movements arrays with the pattern
+- NO specific locations → set "positions": [] and "movements": []
+
+DO NOT include diagrams for:
+- General rallying without shot direction
+- Fitness/footwork/conditioning drills
+- Serve practice without specific return patterns
+- Mental focus or breathing exercises
+- Any drill where you don't specify WHERE on court each shot lands
+
+Format your response as ONLY a JSON array:
 [
   {
     "title": "Drill name (2-4 words)",
-    "description": "Clear step-by-step instructions for the drill. Include setup, execution, and what to focus on. 2-4 sentences.",
+    "description": "Instructions. If including diagram, description MUST say where each shot goes.",
     "duration": "X-Y minutes",
     "difficulty": "$level",
-    "positions": [
-      {"x": 0.5, "y": 0.82, "label": "P"},
-      {"x": 0.5, "y": 0.18, "label": "O"}
-    ],
-    "movements": [
-      {"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.7}, "type": "player"},
-      {"from": {"x": 0.5, "y": 0.18}, "to": {"x": 0.25, "y": 0.7}, "type": "opponent"},
-      {"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.7, "y": 0.25}, "type": "ball", "shot": "FHCC"}
-    ]
+    "positions": [],
+    "movements": []
   }
 ]
 
@@ -698,14 +716,16 @@ Include 4-8 movements showing realistic rally sequence with both players moving 
   }
 
   Widget _buildDrillCard(PracticeDrill drill, int number) {
-    // Convert movements to CourtMovement objects
+    // Convert movements to CourtMovement objects (filter out nulls)
     final movements = drill.movements
-        ?.map((m) => CourtMovement.fromMap(m))
+        ?.where((m) => m != null && m['from'] != null && m['to'] != null)
+        .map((m) => CourtMovement.fromMap(m))
         .toList() ?? [];
 
-    // Convert positions to CourtPosition objects
+    // Convert positions to CourtPosition objects (filter out nulls)
     final positions = drill.positions
-        ?.map((p) => CourtPosition.fromMap(p))
+        ?.where((p) => p != null && p['x'] != null && p['y'] != null)
+        .map((p) => CourtPosition.fromMap(p))
         .toList() ?? [];
 
     // Use green for weakness drills, blue for strength drills
