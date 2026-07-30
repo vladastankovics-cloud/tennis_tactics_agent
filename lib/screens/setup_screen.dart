@@ -17,7 +17,7 @@ class _SetupScreenState extends State<SetupScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscureText = true;
-  String _selectedModel = GeminiModels.flash20;
+  String _selectedModel = GeminiModels.flash25;
 
   @override
   void dispose() {
@@ -141,7 +141,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                 // Model selection
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedModel,
+                  value: _selectedModel,
                   decoration: const InputDecoration(
                     labelText: 'Model',
                     border: OutlineInputBorder(),

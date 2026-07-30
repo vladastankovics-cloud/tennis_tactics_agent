@@ -173,7 +173,7 @@ class AppConfig {
       final model = await _secureStorage.read(key: _geminiModelKey);
       return model ?? 'gemini-2.5-flash';
     } catch (e) {
-      return 'gemini-2.0-flash';
+      return 'gemini-2.5-flash';
     }
   }
 

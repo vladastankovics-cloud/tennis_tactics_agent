@@ -95,7 +95,8 @@
       "Bash($LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe emu kill)",
       "Bash($LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe devices)",
       "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cmd /c \"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe -s emulator-5554 uninstall com.example.tennis_tactics_agent\")"
     ]
   }
 }

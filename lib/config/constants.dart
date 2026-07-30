@@ -67,30 +67,36 @@ class ClaudeModels {
   }
 }
 
-/// Available Gemini AI models
+/// Available Gemini AI models (as of July 2026)
 class GeminiModels {
-  /// Gemini 2.0 Flash - Latest flash model
-  static const String flash20 = 'gemini-2.0-flash';
+  /// Gemini 2.5 Flash - Recommended balance of quality and cost
+  static const String flash25 = 'gemini-2.5-flash';
 
-  /// Gemini 1.5 Flash - Stable flash model
-  static const String flash15 = 'gemini-1.5-flash';
+  /// Gemini 2.5 Flash Lite - Cheapest option
+  static const String flash25Lite = 'gemini-2.5-flash-lite';
+
+  /// Gemini 3.5 Flash - Latest and best quality
+  static const String flash35 = 'gemini-3.5-flash';
 
   /// All available models
   static const List<String> all = [
-    flash20,
-    flash15,
+    flash25,
+    flash25Lite,
+    flash35,
   ];
 
   /// Model display names for UI
   static const Map<String, String> displayNames = {
-    flash20: 'Gemini 2.0 Flash',
-    flash15: 'Gemini 1.5 Flash',
+    flash25: 'Gemini 2.5 Flash',
+    flash25Lite: 'Gemini 2.5 Flash Lite',
+    flash35: 'Gemini 3.5 Flash',
   };
 
   /// Model descriptions
   static const Map<String, String> descriptions = {
-    flash20: 'Latest flash model - fast and capable',
-    flash15: 'Stable flash model - reliable performance',
+    flash25: 'Recommended - good balance of quality and cost',
+    flash25Lite: 'Budget option - cheapest, good for simple tasks',
+    flash35: 'Latest - best quality, higher cost',
   };
 
   /// Get display name for a model
