@@ -102,7 +102,15 @@
       "Bash(python -m pip install:*)",
       "Bash(winget install:*)",
       "Bash(cmd /c \"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe -m pip install -r C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\requirements.txt\":*)",
-      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -m pip install -r \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\requirements.txt\")"
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -m pip install -r \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\requirements.txt\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import telegram; import anthropic; print\\(''All dependencies installed successfully!''\\)\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\telegram_agent.py\")",
+      "Bash(curl:*)",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import httpx; r = httpx.get\\(''https://api.telegram.org''\\); print\\(f''Status: {r.status_code}''\\)\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import asyncio; import httpx; async def test\\(\\): async with httpx.AsyncClient\\(\\) as c: r = await c.get\\(''https://api.telegram.org/bot8803597504:AAHZ4KKasqGBz_LrgXYqx2YtqtpsZOn7QxQ/getMe''\\); print\\(r.text\\); asyncio.run\\(test\\(\\)\\)\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -u \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\telegram_agent.py\")",
+      "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")"
     ]
   }
 }

@@ -282,7 +282,7 @@ async def process_with_ai(user_message: str, context: str = "") -> str:
     if USE_CLAUDE:
         try:
             message = claude_client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-opus-4-5-20251101",
                 max_tokens=4096,
                 system=SYSTEM_PROMPT,
                 messages=[
@@ -363,17 +363,17 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     await update.message.reply_text(
-        "🎾 Tennis Tactics Coding Agent\n\n"
+        "Tennis Tactics Coding Agent\n\n"
         "I can help you with your Flutter project remotely!\n\n"
         "Commands:\n"
         "/status - Project status\n"
         "/diff - Git diff\n"
         "/commit - Quick commit\n\n"
         "Or just tell me what you want to do:\n"
-        "• 'Show me main.dart'\n"
-        "• 'Find where sync happens'\n"
-        "• 'Add a comment to line 50 of main.dart'\n"
-        "• 'Run flutter analyze'"
+        "- 'Show me main.dart'\n"
+        "- 'Find where sync happens'\n"
+        "- 'Add a comment to line 50 of main.dart'\n"
+        "- 'Run flutter analyze'"
     )
 
 
@@ -386,9 +386,9 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     dart_files = len(list(Path(PROJECT_PATH).glob("lib/**/*.dart")))
 
     await update.message.reply_text(
-        f"📁 Project: {Path(PROJECT_PATH).name}\n"
-        f"📄 Dart files: {dart_files}\n"
-        f"🕐 Time: {datetime.now().strftime('%H:%M:%S')}\n\n"
+        f"Project: {Path(PROJECT_PATH).name}\n"
+        f"Dart files: {dart_files}\n"
+        f"Time: {datetime.now().strftime('%H:%M:%S')}\n\n"
         f"Git Status:\n{status}"
     )
 
@@ -423,16 +423,24 @@ async def cmd_commit(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """Start the bot."""
-    print(f"🚀 Starting Telegram Coding Agent...")
-    print(f"📁 Project: {PROJECT_PATH}")
-    print(f"👤 Authorized user: {TELEGRAM_USER_ID}")
-    print(f"🤖 Bot token: {TELEGRAM_BOT_TOKEN[:10]}...")
+    print(f"Starting Telegram Coding Agent...")
+    print(f"Project: {PROJECT_PATH}")
+    print(f"Authorized user: {TELEGRAM_USER_ID}")
+    print(f"Bot token: {TELEGRAM_BOT_TOKEN[:10]}...")
     print()
     print("Bot is running! Send messages to your Telegram bot.")
     print("Press Ctrl+C to stop.")
 
-    # Create application
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    # Create application with extended timeouts
+    from telegram.request import HTTPXRequest
+    request = HTTPXRequest(
+        connection_pool_size=8,
+        connect_timeout=60.0,
+        read_timeout=60.0,
+        write_timeout=60.0,
+        pool_timeout=60.0,
+    )
+    app = Application.builder().token(TELEGRAM_BOT_TOKEN).request(request).build()
 
     # Add handlers
     app.add_handler(CommandHandler("start", cmd_start))
@@ -441,8 +449,12 @@ def main():
     app.add_handler(CommandHandler("commit", cmd_commit))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Start polling
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Start polling with bootstrap retries
+    app.run_polling(
+        allowed_updates=Update.ALL_TYPES,
+        bootstrap_retries=5,
+        drop_pending_updates=True,
+    )
 
 
 if __name__ == "__main__":
