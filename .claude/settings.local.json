@@ -96,7 +96,13 @@
       "Bash($LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe devices)",
       "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\")",
       "WebSearch",
-      "Bash(cmd /c \"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe -s emulator-5554 uninstall com.example.tennis_tactics_agent\")"
+      "Bash(cmd /c \"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe -s emulator-5554 uninstall com.example.tennis_tactics_agent\")",
+      "Bash(where:*)",
+      "Bash(cmd /c \"where python\")",
+      "Bash(python -m pip install:*)",
+      "Bash(winget install:*)",
+      "Bash(cmd /c \"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe -m pip install -r C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\requirements.txt\":*)",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -m pip install -r \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\requirements.txt\")"
     ]
   }
 }
