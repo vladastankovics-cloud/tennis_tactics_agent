@@ -60,12 +60,14 @@ else:
 SYSTEM_PROMPT = """You are a coding assistant that helps with a Flutter/Dart tennis tactics app.
 You have access to tools to read files, write files, search code, and run commands.
 
-When the user asks you to do something:
-1. Understand what they want
-2. Use the appropriate tools to accomplish it
-3. Report back what you did
+CRITICAL RULES:
+1. When a task requires file operations, START your response with the JSON tool call
+2. Do NOT explain or describe - just output the JSON directly
+3. Example: If user says "show me main.dart", respond with: {"tool": "read_file", "path": "lib/main.dart"}
+4. You can include multiple JSON objects if needed
+5. Only add explanation text AFTER the JSON tool calls
 
-Available tools (respond with JSON to use them):
+Available tools (START your response with one of these JSON objects):
 
 1. READ_FILE: Read a file's contents
    {"tool": "read_file", "path": "lib/main.dart"}
@@ -276,10 +278,49 @@ def extract_json(text: str) -> list:
     return json_objects
 
 
-async def process_with_ai(user_message: str, context: str = "") -> str:
-    """Process user message with Claude or Gemini AI."""
+async def process_with_claude_cli(user_message: str, context: str = "") -> str:
+    """Process user message using Claude Code CLI (uses Pro subscription)."""
+    try:
+        # Simpler prompt for CLI - it already has access to tools
+        if context:
+            full_prompt = f"Previous context:\n{context}\n\nUser request: {user_message}"
+        else:
+            full_prompt = user_message
 
-    if USE_CLAUDE:
+        # Run Claude CLI with the prompt via stdin
+        result = subprocess.run(
+            ["claude", "-p", "--model", "sonnet"],
+            input=full_prompt,
+            capture_output=True,
+            text=True,
+            timeout=180,
+            cwd=PROJECT_PATH,
+        )
+
+        output = result.stdout or ""
+        error = result.stderr or ""
+
+        if result.returncode == 0 and output:
+            return output.strip()
+        elif error:
+            return f"Claude CLI Error: {error}"
+        else:
+            return "Claude CLI returned no output"
+    except subprocess.TimeoutExpired:
+        return "Error: Claude CLI timed out (180s limit)"
+    except Exception as e:
+        return f"Claude CLI Error: {e}"
+
+
+async def process_with_ai(user_message: str, context: str = "") -> str:
+    """Process user message with Claude CLI, Claude API, or Gemini."""
+
+    # Prefer Claude CLI (uses Pro subscription)
+    USE_CLAUDE_CLI = os.getenv("USE_CLAUDE_CLI", "true").lower() == "true"
+
+    if USE_CLAUDE_CLI:
+        return await process_with_claude_cli(user_message, context)
+    elif USE_CLAUDE:
         try:
             message = claude_client.messages.create(
                 model="claude-opus-4-5-20251101",
@@ -423,10 +464,17 @@ async def cmd_commit(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """Start the bot."""
+    use_cli = os.getenv("USE_CLAUDE_CLI", "true").lower() == "true"
     print(f"Starting Telegram Coding Agent...")
     print(f"Project: {PROJECT_PATH}")
     print(f"Authorized user: {TELEGRAM_USER_ID}")
     print(f"Bot token: {TELEGRAM_BOT_TOKEN[:10]}...")
+    if use_cli:
+        print(f"AI: Claude Code CLI (Pro subscription)")
+    elif USE_CLAUDE:
+        print(f"AI: Claude API")
+    else:
+        print(f"AI: Gemini API")
     print()
     print("Bot is running! Send messages to your Telegram bot.")
     print("Press Ctrl+C to stop.")
