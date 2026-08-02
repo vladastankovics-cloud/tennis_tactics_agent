@@ -113,7 +113,9 @@
       "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")",
       "Bash(claude /config:*)",
       "Bash(claude -p --model:*)",
-      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_cli.py\")"
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_cli.py\")",
+      "Bash(\"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"run-as com.example.tennis_tactics_agent rm -rf databases/\")",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"run-as com.example.tennis_tactics_agent rm -rf databases/\")"
     ]
   }
 }

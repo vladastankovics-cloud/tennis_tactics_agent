@@ -152,6 +152,7 @@ Each drill should:
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
+- NEVER mention x/y coordinates or axis values in the description text - coordinates are only for the JSON arrays
 
 CRITICAL - DIAGRAM DECISION:
 You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
@@ -583,6 +584,7 @@ Each drill should:
 - Include clear setup and execution steps
 - Have a reasonable duration (5-20 minutes each)
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
+- NEVER mention x/y coordinates or axis values in the description text - coordinates are only for the JSON arrays
 
 CRITICAL - DIAGRAM DECISION:
 You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
@@ -715,6 +717,51 @@ Include 4-8 movements showing realistic rally sequence with both players moving 
     return drills;
   }
 
+  /// Parses markdown-style formatting and returns a RichText widget.
+  /// Supports: **bold**, *italic*, and combinations.
+  Widget _buildFormattedText(String text) {
+    final spans = <TextSpan>[];
+    final defaultStyle = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+    final boldStyle = defaultStyle.copyWith(fontWeight: FontWeight.bold);
+
+    // Pattern matches **bold** text
+    final pattern = RegExp(r'\*\*(.+?)\*\*');
+    int lastEnd = 0;
+
+    for (final match in pattern.allMatches(text)) {
+      // Add text before the match
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+          style: defaultStyle,
+        ));
+      }
+      // Add bold text
+      spans.add(TextSpan(
+        text: match.group(1),
+        style: boldStyle,
+      ));
+      lastEnd = match.end;
+    }
+
+    // Add remaining text after last match
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+        style: defaultStyle,
+      ));
+    }
+
+    // If no formatting found, return simple text
+    if (spans.isEmpty) {
+      return Text(text, style: defaultStyle);
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+    );
+  }
+
   Widget _buildDrillCard(PracticeDrill drill, int number) {
     // Convert movements to CourtMovement objects (filter out nulls)
     final movements = drill.movements
@@ -808,10 +855,7 @@ Include 4-8 movements showing realistic rally sequence with both players moving 
               ),
             ],
             const SizedBox(height: 12),
-            Text(
-              drill.description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            _buildFormattedText(drill.description),
           ],
         ),
       ),
