@@ -110,7 +110,8 @@
       "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import asyncio; import httpx; async def test\\(\\): async with httpx.AsyncClient\\(\\) as c: r = await c.get\\(''https://api.telegram.org/bot8803597504:AAHZ4KKasqGBz_LrgXYqx2YtqtpsZOn7QxQ/getMe''\\); print\\(r.text\\); asyncio.run\\(test\\(\\)\\)\")",
       "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")",
       "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -u \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\telegram_agent.py\")",
-      "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")"
+      "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")",
+      "Bash(claude /config:*)"
     ]
   }
 }
