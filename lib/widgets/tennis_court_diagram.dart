@@ -102,13 +102,11 @@ class _TennisCourtDiagramState extends State<TennisCourtDiagram>
     );
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // Auto-replay after a pause
-        Future.delayed(const Duration(milliseconds: 1200), () {
-          if (mounted && _isPlaying) {
-            _controller.reset();
-            _controller.forward();
-          }
-        });
+        // Loop immediately - no pause between rallies
+        if (mounted && _isPlaying) {
+          _controller.reset();
+          _controller.forward();
+        }
       }
     });
     // Auto-start animation after first frame
@@ -334,11 +332,17 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
           final playerHit = movement.fromY > 0.5;
           final isVolley = movement.shotLabel?.toUpperCase().contains('VOL') ?? false;
           final isApproach = movement.fromY > 0.4 && movement.fromY < 0.6;
+          final isLob = movement.shotLabel?.toUpperCase().contains('LOB') ?? false;
 
           if (playerHit) {
-            // Player hit, opponent receives - opponent moves to ball
+            // Player hit, opponent receives - opponent moves behind ball to hit in front
             prevOpponentX = movement.toX;
-            prevOpponentY = math.min(movement.toY, 0.45);
+            if (isLob && movement.toY < 0.15) {
+              // Lob going deep - opponent runs back
+              prevOpponentY = movement.toY + 0.05;
+            } else {
+              prevOpponentY = math.min(movement.toY - 0.08, 0.40);
+            }
             // Player recovers to center or approaches net
             if (isVolley || isApproach) {
               prevPlayerX = _lerp(prevPlayerX, 0.5, 0.5);
@@ -348,9 +352,14 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
               prevPlayerY = 0.82; // Back to baseline
             }
           } else {
-            // Opponent hit, player receives - player moves to ball
+            // Opponent hit, player receives - player moves behind ball to hit in front
             prevPlayerX = movement.toX;
-            prevPlayerY = math.max(movement.toY, 0.55);
+            if (isLob && movement.toY > 0.85) {
+              // Lob going deep - player runs back
+              prevPlayerY = movement.toY - 0.05;
+            } else {
+              prevPlayerY = math.max(movement.toY + 0.08, 0.60);
+            }
             // Opponent recovers to center or approaches net
             if (isVolley || isApproach) {
               prevOpponentX = _lerp(prevOpponentX, 0.5, 0.5);
@@ -385,10 +394,20 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
         } else if (isBall) {
           // Determine who hit and who receives
           final playerHit = movement.fromY > 0.5;
+          final isLob = movement.shotLabel?.toUpperCase().contains('LOB') ?? false;
 
           if (playerHit) {
-            // Player hit the ball - opponent moves to intercept, player STAYS at hitting position
-            final targetOpponentY = math.min(movement.toY, 0.45);
+            // Player hit the ball - opponent moves to intercept
+            // Position opponent BEHIND the ball (closer to their baseline) so they hit in front
+            final ballLandY = movement.toY;
+            double targetOpponentY;
+            if (isLob && ballLandY < 0.15) {
+              // Lob going deep behind opponent - they run back and hit from behind
+              targetOpponentY = ballLandY + 0.05;
+            } else {
+              // Normal shot - opponent positions behind ball to hit in front
+              targetOpponentY = math.min(ballLandY - 0.08, 0.40);
+            }
             animOpponentX = _lerp(prevOpponentX, movement.toX, easedProgress);
             animOpponentY = _lerp(prevOpponentY, targetOpponentY, easedProgress);
 
@@ -396,8 +415,17 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
             animPlayerX = prevPlayerX;
             animPlayerY = prevPlayerY;
           } else {
-            // Opponent hit the ball - player moves to intercept, opponent STAYS at hitting position
-            final targetPlayerY = math.max(movement.toY, 0.55);
+            // Opponent hit the ball - player moves to intercept
+            // Position player BEHIND the ball (closer to their baseline) so they hit in front
+            final ballLandY = movement.toY;
+            double targetPlayerY;
+            if (isLob && ballLandY > 0.85) {
+              // Lob going deep behind player - they run back and hit from behind
+              targetPlayerY = ballLandY - 0.05;
+            } else {
+              // Normal shot - player positions behind ball to hit in front
+              targetPlayerY = math.max(ballLandY + 0.08, 0.60);
+            }
             animPlayerX = _lerp(prevPlayerX, movement.toX, easedProgress);
             animPlayerY = _lerp(prevPlayerY, targetPlayerY, easedProgress);
 

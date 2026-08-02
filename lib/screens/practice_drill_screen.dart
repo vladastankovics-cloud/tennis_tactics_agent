@@ -225,13 +225,14 @@ Movement types:
 - "ball" = yellow dashed arrow (ball trajectory, include "shot" label)
 
 IMPORTANT movement rules:
-1. After EVERY ball shot, show the receiver moving to intercept it
-2. Pattern: ball → receiver moves to ball → receiver hits ball → hitter moves to that ball → repeat
-3. Example sequence for a rally:
-   - Ball from P to deuce side → O moves to deuce side
-   - Ball from O cross-court → P moves to ad side
-   - Ball from P down-the-line → O moves to cover
-4. Both player AND opponent must move realistically to each incoming ball
+1. Ball MUST always cross the net (from y>0.5 to y<0.5 or vice versa) - no shots that stay on same side
+2. After EVERY ball shot, show the receiver moving to intercept it
+3. Pattern: ball → receiver moves to ball → receiver hits ball → hitter moves to that ball → repeat
+4. Example sequence for a rally:
+   - Ball from P (y=0.82) to O side (y=0.20) → O moves to intercept
+   - Ball from O (y=0.20) to P side (y=0.75) → P moves to intercept
+5. Both player AND opponent must move realistically to each incoming ball
+6. Players should position BEHIND the ball to hit it in front of them (not run past the ball)
 
 Shot abbreviations for "shot" field:
 - FH = Forehand, BH = Backhand
@@ -647,13 +648,14 @@ Movement types:
 - "ball" = yellow dashed arrow (ball trajectory, include "shot" label)
 
 IMPORTANT movement rules:
-1. After EVERY ball shot, show the receiver moving to intercept it
-2. Pattern: ball → receiver moves to ball → receiver hits ball → hitter moves to that ball → repeat
-3. Example sequence for a rally:
-   - Ball from P to deuce side → O moves to deuce side
-   - Ball from O cross-court → P moves to ad side
-   - Ball from P down-the-line → O moves to cover
-4. Both player AND opponent must move realistically to each incoming ball
+1. Ball MUST always cross the net (from y>0.5 to y<0.5 or vice versa) - no shots that stay on same side
+2. After EVERY ball shot, show the receiver moving to intercept it
+3. Pattern: ball → receiver moves to ball → receiver hits ball → hitter moves to that ball → repeat
+4. Example sequence for a rally:
+   - Ball from P (y=0.82) to O side (y=0.20) → O moves to intercept
+   - Ball from O (y=0.20) to P side (y=0.75) → P moves to intercept
+5. Both player AND opponent must move realistically to each incoming ball
+6. Players should position BEHIND the ball to hit it in front of them (not run past the ball)
 
 Shot abbreviations for "shot" field:
 - FH = Forehand, BH = Backhand
