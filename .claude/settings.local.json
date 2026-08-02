@@ -112,7 +112,8 @@
       "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -u \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\telegram_agent.py\")",
       "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_telegram.py\")",
       "Bash(claude /config:*)",
-      "Bash(claude -p --model:*)"
+      "Bash(claude -p --model:*)",
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_cli.py\")"
     ]
   }
 }

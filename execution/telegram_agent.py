@@ -278,16 +278,9 @@ def extract_json(text: str) -> list:
     return json_objects
 
 
-async def process_with_claude_cli(user_message: str, context: str = "") -> str:
-    """Process user message using Claude Code CLI (uses Pro subscription)."""
+def run_claude_cli_sync(full_prompt: str) -> str:
+    """Run Claude CLI synchronously (for thread pool)."""
     try:
-        # Simpler prompt for CLI - it already has access to tools
-        if context:
-            full_prompt = f"Previous context:\n{context}\n\nUser request: {user_message}"
-        else:
-            full_prompt = user_message
-
-        # Run Claude CLI with the prompt via stdin
         result = subprocess.run(
             ["claude", "-p", "--model", "sonnet"],
             input=full_prompt,
@@ -296,7 +289,6 @@ async def process_with_claude_cli(user_message: str, context: str = "") -> str:
             timeout=180,
             cwd=PROJECT_PATH,
         )
-
         output = result.stdout or ""
         error = result.stderr or ""
 
@@ -310,6 +302,19 @@ async def process_with_claude_cli(user_message: str, context: str = "") -> str:
         return "Error: Claude CLI timed out (180s limit)"
     except Exception as e:
         return f"Claude CLI Error: {e}"
+
+
+async def process_with_claude_cli(user_message: str, context: str = "") -> str:
+    """Process user message using Claude Code CLI (uses Pro subscription)."""
+    # Simpler prompt for CLI - it already has access to tools
+    if context:
+        full_prompt = f"Previous context:\n{context}\n\nUser request: {user_message}"
+    else:
+        full_prompt = user_message
+
+    # Run in thread pool to avoid blocking
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, run_claude_cli_sync, full_prompt)
 
 
 async def process_with_ai(user_message: str, context: str = "") -> str:
@@ -349,6 +354,7 @@ conversation_history = {}
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle incoming messages."""
     user_id = update.effective_user.id
+    print(f"[DEBUG] Received message from {user_id}: {update.message.text[:50]}...")
 
     # Security check
     if not is_authorized(user_id):
@@ -356,32 +362,43 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     user_message = update.message.text
+    print(f"[DEBUG] Processing message...")
 
     # Send typing indicator
     await update.message.chat.send_action("typing")
+    print(f"[DEBUG] Sent typing indicator")
 
     # Get conversation history
     history = conversation_history.get(user_id, "")
 
     # Process with AI
+    print(f"[DEBUG] Calling AI...")
     ai_response = await process_with_ai(user_message, history)
+    print(f"[DEBUG] AI response received: {ai_response[:100] if ai_response else 'None'}...")
 
-    # Check for tool calls
-    tool_calls = extract_json(ai_response)
-    tool_results = []
+    # Check if using Claude CLI (it handles tools itself)
+    USE_CLAUDE_CLI = os.getenv("USE_CLAUDE_CLI", "true").lower() == "true"
 
-    for tool_call in tool_calls:
-        result = execute_tool(tool_call)
-        tool_results.append(f"Tool: {tool_call.get('tool')}\nResult: {result}")
-
-    # If there were tool calls, get a summary from AI
-    if tool_results:
-        tool_context = "\n\n".join(tool_results)
-        summary_prompt = f"You executed these tools:\n{tool_context}\n\nProvide a brief summary for the user."
-        summary = await process_with_ai(summary_prompt, "")
-        final_response = summary
-    else:
+    if USE_CLAUDE_CLI:
+        # CLI handles tools directly, just use the response
         final_response = ai_response
+    else:
+        # Check for tool calls (for Gemini/Claude API mode)
+        tool_calls = extract_json(ai_response)
+        tool_results = []
+
+        for tool_call in tool_calls:
+            result = execute_tool(tool_call)
+            tool_results.append(f"Tool: {tool_call.get('tool')}\nResult: {result}")
+
+        # If there were tool calls, get a summary from AI
+        if tool_results:
+            tool_context = "\n\n".join(tool_results)
+            summary_prompt = f"You executed these tools:\n{tool_context}\n\nProvide a brief summary for the user."
+            summary = await process_with_ai(summary_prompt, "")
+            final_response = summary
+        else:
+            final_response = ai_response
 
     # Update conversation history (keep last 5 exchanges)
     history_entry = f"User: {user_message}\nAssistant: {final_response}\n\n"
