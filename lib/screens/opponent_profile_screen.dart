@@ -646,9 +646,9 @@ class _OpponentProfileScreenState extends State<OpponentProfileScreen> {
   List<Widget> _buildEvaluationSection() {
     final List<Widget> widgets = [];
 
-    // Colors for comparison - use theme colors
-    final opponentColor = Theme.of(context).colorScheme.primary;
-    final userColor = Theme.of(context).colorScheme.secondary;
+    // Colors for comparison - opponent in green, user baseline in blue
+    const opponentColor = Color(0xFF6B8F55); // Surround green (weakness color)
+    const userColor = Color(0xFF3B82C4); // Court blue (strength color)
 
     for (var entry in _groups.entries) {
       final groupName = entry.key;

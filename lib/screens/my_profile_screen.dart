@@ -687,8 +687,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   List<Widget> _buildEvaluationSection() {
     final List<Widget> widgets = [];
 
-    // Color for user profile - use theme secondary color
-    final userColor = Theme.of(context).colorScheme.secondary;
+    // Color for user profile - use strength blue
+    const userColor = Color(0xFF3B82C4); // Court blue (strength color)
 
     for (var entry in _groups.entries) {
       final groupName = entry.key;

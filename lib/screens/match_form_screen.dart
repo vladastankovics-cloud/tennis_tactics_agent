@@ -656,7 +656,7 @@ class _MatchFormScreenState extends State<MatchFormScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.person, color: Colors.white),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.analytics_outlined),
+                        icon: const Icon(Icons.edit),
                         onPressed: _openPartnerProfile,
                         tooltip: 'View partner profile',
                       ),
@@ -699,7 +699,7 @@ class _MatchFormScreenState extends State<MatchFormScreen> {
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.person, color: Colors.black),
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.analytics_outlined),
+                      icon: const Icon(Icons.edit),
                       onPressed: _openOpponentProfile,
                       tooltip: 'View opponent profile',
                     ),
@@ -749,7 +749,7 @@ class _MatchFormScreenState extends State<MatchFormScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.person, color: Colors.black),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.analytics_outlined),
+                        icon: const Icon(Icons.edit),
                         onPressed: _openOpponent2Profile,
                         tooltip: 'View opponent 2 profile',
                       ),
