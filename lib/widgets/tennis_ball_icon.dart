@@ -25,7 +25,7 @@ class _TennisBallIconPainter extends CustomPainter {
   final Color color;
 
   // Tennis ball colors
-  static const Color ballGreen = Color(0xFFB9D613);
+  static const Color ballYellow = Color(0xFFFFD700);
   static const Color seamWhite = Color(0xFFF7F7F7);
 
   _TennisBallIconPainter({required this.color});
@@ -35,9 +35,9 @@ class _TennisBallIconPainter extends CustomPainter {
     final double radius = size.width / 2;
     final Offset center = Offset(radius, radius);
 
-    // Draw filled tennis ball (lime green)
+    // Draw filled tennis ball (yellow)
     final ballPaint = Paint()
-      ..color = ballGreen
+      ..color = ballYellow
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, ballPaint);
 

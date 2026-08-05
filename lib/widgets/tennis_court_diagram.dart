@@ -528,9 +528,9 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX + 2, currentY + 2), ballRadius, shadowPaint);
 
-    // Draw tennis ball - lime green matching SVG style
+    // Draw tennis ball - yellow
     final ballPaint = Paint()
-      ..color = const Color(0xFFB9D613) // Tennis ball lime green
+      ..color = const Color(0xFFFFD700) // Tennis ball yellow
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX, currentY), ballRadius, ballPaint);
 
