@@ -115,7 +115,9 @@
       "Bash(claude -p --model:*)",
       "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\execution\\\\test_cli.py\")",
       "Bash(\"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"run-as com.example.tennis_tactics_agent rm -rf databases/\")",
-      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"run-as com.example.tennis_tactics_agent rm -rf databases/\")"
+      "Bash(\"C:\\\\Users\\\\Vlada\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"run-as com.example.tennis_tactics_agent rm -rf databases/\")",
+      "Bash(cmd /c \"where emulator 2>nul || echo %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\")",
+      "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe 2>nul && %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe -list-avds\")"
     ]
   }
 }
