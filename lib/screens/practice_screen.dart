@@ -205,6 +205,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
       if (index != -1) {
         _allBubbles[index] = _allBubbles[index].copyWith(isHidden: false);
       }
+      // Auto-switch to non-hidden view if no hidden items remain
+      if (_hiddenCount == 0) {
+        _showHidden = false;
+      }
     });
 
     if (!mounted) return;
