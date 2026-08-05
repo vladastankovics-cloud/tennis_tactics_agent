@@ -585,6 +585,7 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     }
 
     // Draw tennis ball seam pattern with rotation
+    // Only draw the front-facing seam (single S-curve visible from this angle)
     final seamPaint = Paint()
       ..color = const Color(0xFFF7F7F7)
       ..style = PaintingStyle.stroke
@@ -601,28 +602,16 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     // Apply base rotation to orient seams for spin type, then spin rotation
     canvas.rotate(baseRotation + spinAngle);
 
-    // Tennis ball seam pattern - figure-8 / infinity pattern that wraps around
-    // Draw two curved seams that create the characteristic tennis ball look
-
-    // First seam curve (one half of the figure-8)
-    final seam1 = Path();
-    seam1.moveTo(0, -r);
-    seam1.cubicTo(
-      r * 0.8, -r * 0.8,   // control point 1
-      r * 0.8, r * 0.8,    // control point 2
-      0, r,                 // end point
+    // Single S-curve seam visible from front view
+    // The seam curves from one side to the other as it goes top to bottom
+    final seam = Path();
+    seam.moveTo(0, -r);  // Start at top center
+    seam.cubicTo(
+      r * 0.9, -r * 0.3,    // curves right in upper portion
+      -r * 0.9, r * 0.3,    // curves left in lower portion
+      0, r,                  // end at bottom center
     );
-    canvas.drawPath(seam1, seamPaint);
-
-    // Second seam curve (other half of the figure-8, opposite side)
-    final seam2 = Path();
-    seam2.moveTo(0, -r);
-    seam2.cubicTo(
-      -r * 0.8, -r * 0.8,  // control point 1
-      -r * 0.8, r * 0.8,   // control point 2
-      0, r,                 // end point
-    );
-    canvas.drawPath(seam2, seamPaint);
+    canvas.drawPath(seam, seamPaint);
 
     canvas.restore();
 
