@@ -544,44 +544,49 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // Only apply spin rotation if spin type is explicitly mentioned
-    double spinRotation = 0.0;
+    // Calculate spin offset for visual effect
+    double horizontalSpinOffset = 0.0;  // For serve sidespin (left-right)
+    double verticalSpinOffset = 0.0;    // For ground stroke spin (top-bottom)
+
     if (shouldSpin) {
+      // Create cyclical offset that wraps around (simulates continuous spin)
+      final spinCycle = (progress * 4) % 1.0;  // 4 full rotations during flight
+      final cycleOffset = math.sin(spinCycle * 2 * math.pi);
+
       if (isServe) {
-        // Serve spins are horizontal (sidespin)
+        // Serve spins are horizontal (sidespin) - seams move left/right
         if (hasSlice) {
           // Serve slice: right to left (or left to right if left-handed)
-          // Same direction for both player and opponent serves
-          spinRotation = isLeftHanded
-              ? progress * 8 * math.pi   // left to right
-              : -progress * 8 * math.pi; // right to left
+          horizontalSpinOffset = isLeftHanded
+              ? cycleOffset * ballRadius * 0.6   // left to right
+              : -cycleOffset * ballRadius * 0.6; // right to left
         } else if (hasTopspin) {
           // Serve topspin/kick: left to right (or right to left if left-handed)
-          // Same direction for both player and opponent serves
-          spinRotation = isLeftHanded
-              ? -progress * 8 * math.pi  // right to left
-              : progress * 8 * math.pi;  // left to right
+          horizontalSpinOffset = isLeftHanded
+              ? -cycleOffset * ballRadius * 0.6  // right to left
+              : cycleOffset * ballRadius * 0.6;  // left to right
         }
       } else {
-        // Ground strokes - vertical spin (topspin/backspin)
+        // Ground strokes - vertical spin (topspin/backspin) - seams move up/down
         if (hasTopspin) {
-          // Topspin: ball spins forward (bottom to top for player, top to bottom for opponent)
-          spinRotation = playerHit
-              ? progress * 10 * math.pi   // bottom to top
-              : -progress * 10 * math.pi; // top to bottom
+          // Topspin: seams move downward (ball rolling forward)
+          // Player shot: bottom to top visually means seams move down
+          // Opponent shot: top to bottom visually means seams move up
+          verticalSpinOffset = playerHit
+              ? cycleOffset * ballRadius * 0.6   // seams cycle downward
+              : -cycleOffset * ballRadius * 0.6; // seams cycle upward
         } else if (hasSlice || isDropShot) {
-          // Slice/Drop shot: ball spins backward (top to bottom for player, bottom to top for opponent)
-          spinRotation = playerHit
-              ? -progress * 8 * math.pi  // top to bottom
-              : progress * 8 * math.pi;  // bottom to top
+          // Slice/Drop shot: seams move upward (ball spinning backward)
+          verticalSpinOffset = playerHit
+              ? -cycleOffset * ballRadius * 0.6  // seams cycle upward
+              : cycleOffset * ballRadius * 0.6;  // seams cycle downward
         }
       }
-
-      canvas.rotate(spinRotation);
     }
 
     // Draw tennis ball seam pattern matching SVG style
     // Two curved white seams on opposite corners (upper-left and lower-right)
+    // Apply spin offset to create illusion of rotation
     final seamPaint = Paint()
       ..color = const Color(0xFFF7F7F7)
       ..style = PaintingStyle.stroke
@@ -594,6 +599,9 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     final clipPath = Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: r));
     canvas.clipPath(clipPath);
+
+    // Apply spin offset (horizontal for serves, vertical for ground strokes)
+    canvas.translate(horizontalSpinOffset, verticalSpinOffset);
 
     // Upper-left curved seam
     final upperSeam = Path();
@@ -810,9 +818,46 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       ..strokeWidth = 1.5;
     canvas.drawCircle(pos, radius, borderPaint);
 
+    // Convert short labels to full names
+    String displayLabel;
+    if (position.label == 'P') {
+      displayLabel = 'Player';
+    } else if (position.label == 'O') {
+      displayLabel = 'Opponent';
+    } else if (position.label == 'P1') {
+      displayLabel = 'Player 1';
+    } else if (position.label == 'P2') {
+      displayLabel = 'Player 2';
+    } else if (position.label == 'O1') {
+      displayLabel = 'Opponent 1';
+    } else if (position.label == 'O2') {
+      displayLabel = 'Opponent 2';
+    } else {
+      displayLabel = position.label;
+    }
+
+    // Draw label below the circle
+    final labelPainter = TextPainter(
+      text: TextSpan(
+        text: displayLabel,
+        style: TextStyle(
+          color: color,
+          fontSize: radius * 0.7,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    labelPainter.layout();
+    labelPainter.paint(
+      canvas,
+      Offset(pos.dx - labelPainter.width / 2, pos.dy + radius + 2),
+    );
+
+    // Draw short letter inside the circle
     final textPainter = TextPainter(
       text: TextSpan(
-        text: position.label,
+        text: position.label.substring(0, 1), // Just first letter inside circle
         style: TextStyle(
           color: textColor,
           fontSize: radius * 0.9,

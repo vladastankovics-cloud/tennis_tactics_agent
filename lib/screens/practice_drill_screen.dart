@@ -154,17 +154,14 @@ Each drill should:
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
 - NEVER mention x/y coordinates or axis values in the description text - coordinates are only for the JSON arrays
 
-CRITICAL - DIAGRAM DECISION:
-You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
-- YES specific locations → include positions and movements arrays with the pattern
-- NO specific locations → set "positions": [] and "movements": []
+DIAGRAM DECISION:
+ALWAYS include diagrams with positions and movements arrays when the description mentions ANY of:
+- Shot directions (cross-court, down-the-line, inside-out, wide, center, etc.)
+- Court areas (deuce side, ad side, backhand corner, forehand corner, etc.)
+- Shot sequences (serve then approach, rally pattern, etc.)
+- Specific shot types with implied direction (approach shot, passing shot, etc.)
 
-DO NOT include diagrams for:
-- General rallying without shot direction ("hit forehands back and forth")
-- Fitness/footwork/conditioning drills
-- Serve practice without specific return patterns
-- Mental focus or breathing exercises
-- Any drill where you don't specify WHERE on court each shot lands
+Only skip diagrams for pure fitness, mental, or general "hit back and forth" drills with no direction specified.
 
 Format your response as ONLY a JSON array:
 [
@@ -178,13 +175,17 @@ Format your response as ONLY a JSON array:
   }
 ]
 
-Example WITH diagram (description specifies locations):
-  "description": "Player hits deep cross-court forehand to Opponent's backhand corner. Opponent returns down-the-line. Player moves and hits inside-out forehand to deuce side.",
+Example WITH diagram (cross-court rally):
+  "description": "Player hits deep cross-court forehand to Opponent's backhand corner. Opponent returns cross-court. Player moves and hits inside-out forehand to deuce side.",
   "positions": [{"x": 0.5, "y": 0.82, "label": "P"}, {"x": 0.5, "y": 0.18, "label": "O"}],
-  "movements": [{"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.2}, "type": "ball", "shot": "FHCC"}]
+  "movements": [
+    {"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.2}, "type": "ball", "shot": "FHCC"},
+    {"from": {"x": 0.25, "y": 0.2}, "to": {"x": 0.3, "y": 0.75}, "type": "ball", "shot": "BHCC"},
+    {"from": {"x": 0.3, "y": 0.75}, "to": {"x": 0.7, "y": 0.2}, "type": "ball", "shot": "FHIO"}
+  ]
 
-Example WITHOUT diagram (no specific locations):
-  "description": "Practice approach shots and volleys. Focus on split-stepping and quick reactions at net.",
+Example WITHOUT diagram (pure fitness drill):
+  "description": "Shadow swing practice. Focus on footwork and balance without a ball.",
   "positions": [],
   "movements": []
 
@@ -587,27 +588,24 @@ Each drill should:
 - In the description, use "Player" (not "P") and "Opponent" (not "O") when referring to players
 - NEVER mention x/y coordinates or axis values in the description text - coordinates are only for the JSON arrays
 
-CRITICAL - DIAGRAM DECISION:
-You MUST decide for each drill: does the description specify EXACT shot locations (e.g., "cross-court to deuce side", "down-the-line to ad corner")?
-- YES specific locations → include positions and movements arrays with the pattern
-- NO specific locations → set "positions": [] and "movements": []
+DIAGRAM DECISION:
+ALWAYS include diagrams with positions and movements arrays when the description mentions ANY of:
+- Shot directions (cross-court, down-the-line, inside-out, wide, center, etc.)
+- Court areas (deuce side, ad side, backhand corner, forehand corner, etc.)
+- Shot sequences (serve then approach, rally pattern, etc.)
+- Specific shot types with implied direction (approach shot, passing shot, etc.)
 
-DO NOT include diagrams for:
-- General rallying without shot direction
-- Fitness/footwork/conditioning drills
-- Serve practice without specific return patterns
-- Mental focus or breathing exercises
-- Any drill where you don't specify WHERE on court each shot lands
+Only skip diagrams for pure fitness, mental, or general "hit back and forth" drills with no direction specified.
 
 Format your response as ONLY a JSON array:
 [
   {
     "title": "Drill name (2-4 words)",
-    "description": "Instructions. If including diagram, description MUST say where each shot goes.",
+    "description": "Instructions with specific shot directions.",
     "duration": "X-Y minutes",
     "difficulty": "$level",
-    "positions": [],
-    "movements": []
+    "positions": [{"x": 0.5, "y": 0.82, "label": "P"}, {"x": 0.5, "y": 0.18, "label": "O"}],
+    "movements": [{"from": {"x": 0.5, "y": 0.82}, "to": {"x": 0.25, "y": 0.2}, "type": "ball", "shot": "FHCC"}]
   }
 ]
 
