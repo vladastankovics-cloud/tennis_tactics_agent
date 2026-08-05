@@ -544,10 +544,10 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // Calculate spin rotation angle
-    double spinAngle = 0.0;
-    // Base rotation to orient the seams for the spin axis
-    double baseRotation = 0.0;
+    // Calculate spin parameters
+    double spinAngle = 0.0;        // For Z-axis rotation (sidespin on serves)
+    double verticalPhase = 0.0;    // For X-axis rotation simulation (topspin/slice)
+    bool useVerticalSpin = false;  // True for ground strokes, false for serves
 
     if (shouldSpin) {
       // Number of full rotations during ball flight
@@ -555,8 +555,8 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
 
       if (isServe) {
         // Serve spins - ball rotates around vertical axis (sidespin)
-        // Seams oriented horizontally, rotate around Z-axis
-        baseRotation = 0;  // Seams horizontal
+        // Use Z-axis canvas rotation
+        useVerticalSpin = false;
         if (hasSlice) {
           spinAngle = isLeftHanded
               ? rotations * 2 * math.pi    // clockwise
@@ -567,25 +567,24 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
               : rotations * 2 * math.pi;   // clockwise
         }
       } else {
-        // Ground strokes - ball rotates around horizontal axis (topspin/backspin)
-        // Orient seams vertically first, then rotate
-        baseRotation = math.pi / 2;  // Seams vertical for top/back spin effect
+        // Ground strokes - ball rotates around horizontal X-axis (topspin/backspin)
+        // Simulate by shifting seam vertically with wrapping
+        useVerticalSpin = true;
         if (hasTopspin) {
-          // Topspin: ball rolls forward
-          spinAngle = playerHit
-              ? rotations * 2 * math.pi    // forward roll
-              : -rotations * 2 * math.pi;  // appears opposite from other side
+          // Topspin: seams flow downward (ball rolling forward)
+          verticalPhase = playerHit
+              ? rotations * 2 * math.pi    // downward flow
+              : -rotations * 2 * math.pi;  // upward flow (from opponent's perspective)
         } else if (hasSlice || isDropShot) {
-          // Slice: ball spins backward
-          spinAngle = playerHit
-              ? -rotations * 2 * math.pi   // backward spin
-              : rotations * 2 * math.pi;   // appears opposite from other side
+          // Slice: seams flow upward (ball spinning backward)
+          verticalPhase = playerHit
+              ? -rotations * 2 * math.pi   // upward flow
+              : rotations * 2 * math.pi;   // downward flow
         }
       }
     }
 
-    // Draw tennis ball seam pattern with rotation
-    // Only draw the front-facing seam (single S-curve visible from this angle)
+    // Draw tennis ball seam pattern
     final seamPaint = Paint()
       ..color = const Color(0xFFF7F7F7)
       ..style = PaintingStyle.stroke
@@ -599,19 +598,39 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     final clipPath = Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: r));
     canvas.clipPath(clipPath);
 
-    // Apply base rotation to orient seams for spin type, then spin rotation
-    canvas.rotate(baseRotation + spinAngle);
+    if (useVerticalSpin) {
+      // X-axis rotation simulation for topspin/slice
+      // Draw seam at multiple vertical positions to create wrapping effect
+      final yOffset = (verticalPhase % (2 * math.pi)) / (2 * math.pi) * (2 * r);
 
-    // Single S-curve seam visible from front view
-    // The seam curves from one side to the other as it goes top to bottom
-    final seam = Path();
-    seam.moveTo(0, -r);  // Start at top center
-    seam.cubicTo(
-      r * 0.9, -r * 0.3,    // curves right in upper portion
-      -r * 0.9, r * 0.3,    // curves left in lower portion
-      0, r,                  // end at bottom center
-    );
-    canvas.drawPath(seam, seamPaint);
+      // Draw the seam pattern at offset positions (wrapping around)
+      for (int i = -1; i <= 1; i++) {
+        final offset = yOffset + i * 2 * r;
+
+        // S-curve seam shifted vertically
+        final seam = Path();
+        seam.moveTo(-r * 0.8, -r + offset);
+        seam.cubicTo(
+          r * 0.5, -r * 0.3 + offset,
+          -r * 0.5, r * 0.3 + offset,
+          r * 0.8, r + offset,
+        );
+        canvas.drawPath(seam, seamPaint);
+      }
+    } else {
+      // Z-axis rotation for serve sidespin
+      canvas.rotate(spinAngle);
+
+      // Single S-curve seam visible from front view
+      final seam = Path();
+      seam.moveTo(0, -r);
+      seam.cubicTo(
+        r * 0.9, -r * 0.3,
+        -r * 0.9, r * 0.3,
+        0, r,
+      );
+      canvas.drawPath(seam, seamPaint);
+    }
 
     canvas.restore();
 
