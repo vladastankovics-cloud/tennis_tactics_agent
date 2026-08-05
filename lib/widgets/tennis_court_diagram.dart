@@ -528,9 +528,9 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX + 2, currentY + 2), ballRadius, shadowPaint);
 
-    // Draw tennis ball - fluorescent yellow-green
+    // Draw tennis ball - lime green matching SVG style
     final ballPaint = Paint()
-      ..color = const Color(0xFFCCFF00) // Tennis ball yellow-green
+      ..color = const Color(0xFFB9D613) // Tennis ball lime green
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(currentX, currentY), ballRadius, ballPaint);
 
@@ -561,39 +561,42 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       canvas.rotate(spinRotation);
     }
 
-    // Draw realistic tennis ball seam pattern
-    // A tennis ball has a curved seam that wraps around in a figure-8/infinity pattern
-    // When viewed from one angle, it looks like two curved lines forming a "peanut" shape
+    // Draw tennis ball seam pattern matching SVG style
+    // Two curved white seams on opposite corners (upper-left and lower-right)
     final seamPaint = Paint()
-      ..color = Colors.white
+      ..color = const Color(0xFFF7F7F7)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
+      ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
-    final r = ballRadius * 0.88;
+    final r = ballRadius;
 
-    // Tennis ball seam pattern - the characteristic curved white line
-    // The seam creates an hourglass/figure-8 shape when viewed from the side
+    // Clip seams to ball circle
+    canvas.save();
+    final clipPath = Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: r));
+    canvas.clipPath(clipPath);
 
-    // Left curved seam
-    final leftSeam = Path();
-    leftSeam.moveTo(-r * 0.1, -r * 0.95);
-    leftSeam.cubicTo(
-      -r * 0.85, -r * 0.5,   // control point 1 - bulges left at top
-      -r * 0.85, r * 0.5,    // control point 2 - bulges left at bottom
-      -r * 0.1, r * 0.95,    // end point
+    // Upper-left curved seam
+    final upperSeam = Path();
+    upperSeam.moveTo(-r * 0.65, -r * 0.85);
+    upperSeam.cubicTo(
+      -r * 0.9, -r * 0.4,    // control point 1
+      -r * 0.4, r * 0.1,     // control point 2
+      -r * 0.85, r * 0.35,   // end point
     );
-    canvas.drawPath(leftSeam, seamPaint);
+    canvas.drawPath(upperSeam, seamPaint);
 
-    // Right curved seam (mirror)
-    final rightSeam = Path();
-    rightSeam.moveTo(r * 0.1, -r * 0.95);
-    rightSeam.cubicTo(
-      r * 0.85, -r * 0.5,    // control point 1 - bulges right at top
-      r * 0.85, r * 0.5,     // control point 2 - bulges right at bottom
-      r * 0.1, r * 0.95,     // end point
+    // Lower-right curved seam (opposite corner)
+    final lowerSeam = Path();
+    lowerSeam.moveTo(r * 0.65, -r * 0.35);
+    lowerSeam.cubicTo(
+      r * 0.4, -r * 0.1,     // control point 1
+      r * 0.9, r * 0.4,      // control point 2
+      r * 0.85, r * 0.85,    // end point
     );
-    canvas.drawPath(rightSeam, seamPaint);
+    canvas.drawPath(lowerSeam, seamPaint);
+
+    canvas.restore();
 
     canvas.restore();
 
