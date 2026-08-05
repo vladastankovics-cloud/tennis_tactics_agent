@@ -544,49 +544,47 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // Calculate spin offset for visual effect
-    double horizontalSpinOffset = 0.0;  // For serve sidespin (left-right)
-    double verticalSpinOffset = 0.0;    // For ground stroke spin (top-bottom)
+    // Calculate spin rotation angle
+    double spinAngle = 0.0;
+    // Base rotation to orient the seams for the spin axis
+    double baseRotation = 0.0;
 
     if (shouldSpin) {
-      // Create cyclical offset that wraps around (simulates continuous spin)
-      final spinCycle = (progress * 4) % 1.0;  // 4 full rotations during flight
-      final cycleOffset = math.sin(spinCycle * 2 * math.pi);
+      // Number of full rotations during ball flight
+      final rotations = progress * 6;  // 6 full rotations during flight
 
       if (isServe) {
-        // Serve spins are horizontal (sidespin) - seams move left/right
+        // Serve spins - ball rotates around vertical axis (sidespin)
+        // Seams oriented horizontally, rotate around Z-axis
+        baseRotation = 0;  // Seams horizontal
         if (hasSlice) {
-          // Serve slice: right to left (or left to right if left-handed)
-          horizontalSpinOffset = isLeftHanded
-              ? cycleOffset * ballRadius * 0.6   // left to right
-              : -cycleOffset * ballRadius * 0.6; // right to left
+          spinAngle = isLeftHanded
+              ? rotations * 2 * math.pi    // clockwise
+              : -rotations * 2 * math.pi;  // counter-clockwise
         } else if (hasTopspin) {
-          // Serve topspin/kick: left to right (or right to left if left-handed)
-          horizontalSpinOffset = isLeftHanded
-              ? -cycleOffset * ballRadius * 0.6  // right to left
-              : cycleOffset * ballRadius * 0.6;  // left to right
+          spinAngle = isLeftHanded
+              ? -rotations * 2 * math.pi   // counter-clockwise
+              : rotations * 2 * math.pi;   // clockwise
         }
       } else {
-        // Ground strokes - vertical spin (topspin/backspin) - seams move up/down
+        // Ground strokes - ball rotates around horizontal axis (topspin/backspin)
+        // Orient seams vertically first, then rotate
+        baseRotation = math.pi / 2;  // Seams vertical for top/back spin effect
         if (hasTopspin) {
-          // Topspin: seams move downward (ball rolling forward)
-          // Player shot: bottom to top visually means seams move down
-          // Opponent shot: top to bottom visually means seams move up
-          verticalSpinOffset = playerHit
-              ? cycleOffset * ballRadius * 0.6   // seams cycle downward
-              : -cycleOffset * ballRadius * 0.6; // seams cycle upward
+          // Topspin: ball rolls forward
+          spinAngle = playerHit
+              ? rotations * 2 * math.pi    // forward roll
+              : -rotations * 2 * math.pi;  // appears opposite from other side
         } else if (hasSlice || isDropShot) {
-          // Slice/Drop shot: seams move upward (ball spinning backward)
-          verticalSpinOffset = playerHit
-              ? -cycleOffset * ballRadius * 0.6  // seams cycle upward
-              : cycleOffset * ballRadius * 0.6;  // seams cycle downward
+          // Slice: ball spins backward
+          spinAngle = playerHit
+              ? -rotations * 2 * math.pi   // backward spin
+              : rotations * 2 * math.pi;   // appears opposite from other side
         }
       }
     }
 
-    // Draw tennis ball seam pattern matching SVG style
-    // Two curved white seams on opposite corners (upper-left and lower-right)
-    // Apply spin offset to create illusion of rotation
+    // Draw tennis ball seam pattern with rotation
     final seamPaint = Paint()
       ..color = const Color(0xFFF7F7F7)
       ..style = PaintingStyle.stroke
@@ -600,28 +598,31 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     final clipPath = Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: r));
     canvas.clipPath(clipPath);
 
-    // Apply spin offset (horizontal for serves, vertical for ground strokes)
-    canvas.translate(horizontalSpinOffset, verticalSpinOffset);
+    // Apply base rotation to orient seams for spin type, then spin rotation
+    canvas.rotate(baseRotation + spinAngle);
 
-    // Upper-left curved seam
-    final upperSeam = Path();
-    upperSeam.moveTo(-r * 0.65, -r * 0.85);
-    upperSeam.cubicTo(
-      -r * 0.9, -r * 0.4,    // control point 1
-      -r * 0.4, r * 0.1,     // control point 2
-      -r * 0.85, r * 0.35,   // end point
-    );
-    canvas.drawPath(upperSeam, seamPaint);
+    // Tennis ball seam pattern - figure-8 / infinity pattern that wraps around
+    // Draw two curved seams that create the characteristic tennis ball look
 
-    // Lower-right curved seam (opposite corner)
-    final lowerSeam = Path();
-    lowerSeam.moveTo(r * 0.65, -r * 0.35);
-    lowerSeam.cubicTo(
-      r * 0.4, -r * 0.1,     // control point 1
-      r * 0.9, r * 0.4,      // control point 2
-      r * 0.85, r * 0.85,    // end point
+    // First seam curve (one half of the figure-8)
+    final seam1 = Path();
+    seam1.moveTo(0, -r);
+    seam1.cubicTo(
+      r * 0.8, -r * 0.8,   // control point 1
+      r * 0.8, r * 0.8,    // control point 2
+      0, r,                 // end point
     );
-    canvas.drawPath(lowerSeam, seamPaint);
+    canvas.drawPath(seam1, seamPaint);
+
+    // Second seam curve (other half of the figure-8, opposite side)
+    final seam2 = Path();
+    seam2.moveTo(0, -r);
+    seam2.cubicTo(
+      -r * 0.8, -r * 0.8,  // control point 1
+      -r * 0.8, r * 0.8,   // control point 2
+      0, r,                 // end point
+    );
+    canvas.drawPath(seam2, seamPaint);
 
     canvas.restore();
 
