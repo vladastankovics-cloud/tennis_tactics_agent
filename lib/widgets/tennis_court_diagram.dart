@@ -517,7 +517,7 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     // Determine spin type from shot label
     final shotLabel = movement.shotLabel?.toUpperCase() ?? '';
     final isServe = shotLabel.contains('SV') || shotLabel.contains('SERVE');
-    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP') || shotLabel.contains('KICK');
+    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP') || shotLabel.contains('KICK') || shotLabel.contains('HEAVY');
     final hasSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
     final hasFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
     final isDropShot = shotLabel.contains('DROP');
@@ -818,46 +818,9 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
       ..strokeWidth = 1.5;
     canvas.drawCircle(pos, radius, borderPaint);
 
-    // Convert short labels to full names
-    String displayLabel;
-    if (position.label == 'P') {
-      displayLabel = 'Player';
-    } else if (position.label == 'O') {
-      displayLabel = 'Opponent';
-    } else if (position.label == 'P1') {
-      displayLabel = 'Player 1';
-    } else if (position.label == 'P2') {
-      displayLabel = 'Player 2';
-    } else if (position.label == 'O1') {
-      displayLabel = 'Opponent 1';
-    } else if (position.label == 'O2') {
-      displayLabel = 'Opponent 2';
-    } else {
-      displayLabel = position.label;
-    }
-
-    // Draw label below the circle
-    final labelPainter = TextPainter(
-      text: TextSpan(
-        text: displayLabel,
-        style: TextStyle(
-          color: color,
-          fontSize: radius * 0.7,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    labelPainter.layout();
-    labelPainter.paint(
-      canvas,
-      Offset(pos.dx - labelPainter.width / 2, pos.dy + radius + 2),
-    );
-
-    // Draw short letter inside the circle
     final textPainter = TextPainter(
       text: TextSpan(
-        text: position.label.substring(0, 1), // Just first letter inside circle
+        text: position.label,
         style: TextStyle(
           color: textColor,
           fontSize: radius * 0.9,
