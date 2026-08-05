@@ -516,11 +516,18 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
 
     // Determine spin type from shot label
     final shotLabel = movement.shotLabel?.toUpperCase() ?? '';
-    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP');
+    final isServe = shotLabel.contains('SV') || shotLabel.contains('SERVE');
+    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP') || shotLabel.contains('KICK');
     final hasSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
     final hasFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
-    final hasSidespin = shotLabel.contains('SS') || shotLabel.contains('SIDE') || shotLabel.contains('KICK');
-    final hasAnySpin = hasTopspin || hasSlice || hasFlat || hasSidespin;
+    final isDropShot = shotLabel.contains('DROP');
+    final isLeftHanded = shotLabel.contains('LEFT') || shotLabel.contains('LH');
+
+    // Determine who hit the ball (player is y > 0.5, opponent is y < 0.5)
+    final playerHit = movement.fromY > 0.5;
+
+    // Only spin if topspin, slice, or drop shot is mentioned (not flat or unspecified)
+    final shouldSpin = hasTopspin || hasSlice || isDropShot;
 
     // Draw ball shadow
     final shadowPaint = Paint()
@@ -537,25 +544,37 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     canvas.save();
     canvas.translate(currentX, currentY);
 
-    // Only apply spin rotation if spin type is specified
+    // Only apply spin rotation if spin type is explicitly mentioned
     double spinRotation = 0.0;
-    if (hasAnySpin) {
-      // Align with travel direction first
-      canvas.rotate(travelAngle + math.pi / 2);
-
-      // Calculate spin rotation based on type
-      if (hasSidespin) {
-        // Sidespin/kick - horizontal axis rotation
-        spinRotation = progress * 6 * math.pi;
-      } else if (hasSlice) {
-        // Backspin - rotates backward (top moves opposite to travel)
-        spinRotation = -progress * 8 * math.pi;
-      } else if (hasFlat) {
-        // Flat - very minimal rotation
-        spinRotation = progress * 1 * math.pi;
-      } else if (hasTopspin) {
-        // Topspin - rotates forward (top moves with travel direction)
-        spinRotation = progress * 10 * math.pi;
+    if (shouldSpin) {
+      if (isServe) {
+        // Serve spins are horizontal (sidespin)
+        if (hasSlice) {
+          // Serve slice: right to left (or left to right if left-handed)
+          // Same direction for both player and opponent serves
+          spinRotation = isLeftHanded
+              ? progress * 8 * math.pi   // left to right
+              : -progress * 8 * math.pi; // right to left
+        } else if (hasTopspin) {
+          // Serve topspin/kick: left to right (or right to left if left-handed)
+          // Same direction for both player and opponent serves
+          spinRotation = isLeftHanded
+              ? -progress * 8 * math.pi  // right to left
+              : progress * 8 * math.pi;  // left to right
+        }
+      } else {
+        // Ground strokes - vertical spin (topspin/backspin)
+        if (hasTopspin) {
+          // Topspin: ball spins forward (bottom to top for player, top to bottom for opponent)
+          spinRotation = playerHit
+              ? progress * 10 * math.pi   // bottom to top
+              : -progress * 10 * math.pi; // top to bottom
+        } else if (hasSlice || isDropShot) {
+          // Slice/Drop shot: ball spins backward (top to bottom for player, bottom to top for opponent)
+          spinRotation = playerHit
+              ? -progress * 8 * math.pi  // top to bottom
+              : progress * 8 * math.pi;  // bottom to top
+        }
       }
 
       canvas.rotate(spinRotation);
