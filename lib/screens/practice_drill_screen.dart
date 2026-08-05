@@ -203,16 +203,16 @@ Key positions for RALLYING:
 - Net approach: y=0.55-0.6 (player side), y=0.4-0.45 (opponent side)
 
 Key positions for SERVING (player serves):
-- Server deuce court: x=0.45, y=0.88 (right of center mark)
-- Server ad court: x=0.55, y=0.88 (left of center mark)
-- Returner vs deuce serve: x=0.30, y=0.15 (diagonal, ready for wide/body/T)
-- Returner vs ad serve: x=0.70, y=0.15 (diagonal, ready for wide/body/T)
+- Player serves deuce: x=0.55, y=0.88 (right of center mark)
+- Player serves ad: x=0.45, y=0.88 (left of center mark)
+- Opponent returning deuce: x=0.30, y=0.15 (diagonal, ready for wide/body/T)
+- Opponent returning ad: x=0.70, y=0.15 (diagonal, ready for wide/body/T)
 
 Key positions for RETURNING (opponent serves):
-- Opponent server deuce: x=0.45, y=0.12
-- Opponent server ad: x=0.55, y=0.12
-- Player returner deuce: x=0.30, y=0.85 (behind baseline, diagonal)
-- Player returner ad: x=0.70, y=0.85 (behind baseline, diagonal)
+- Opponent serves deuce: x=0.45, y=0.12 (left of center from our view)
+- Opponent serves ad: x=0.55, y=0.12 (right of center from our view)
+- Player returning deuce: x=0.70, y=0.85 (diagonal, behind baseline)
+- Player returning ad: x=0.30, y=0.85 (diagonal, behind baseline)
 
 ## Positions
 Mark starting positions with labels:
@@ -623,16 +623,16 @@ Key positions for RALLYING:
 - Net approach: y=0.55-0.6 (player side), y=0.4-0.45 (opponent side)
 
 Key positions for SERVING (player serves):
-- Server deuce court: x=0.45, y=0.88 (right of center mark)
-- Server ad court: x=0.55, y=0.88 (left of center mark)
-- Returner vs deuce serve: x=0.30, y=0.15 (diagonal, ready for wide/body/T)
-- Returner vs ad serve: x=0.70, y=0.15 (diagonal, ready for wide/body/T)
+- Player serves deuce: x=0.55, y=0.88 (right of center mark)
+- Player serves ad: x=0.45, y=0.88 (left of center mark)
+- Opponent returning deuce: x=0.30, y=0.15 (diagonal, ready for wide/body/T)
+- Opponent returning ad: x=0.70, y=0.15 (diagonal, ready for wide/body/T)
 
 Key positions for RETURNING (opponent serves):
-- Opponent server deuce: x=0.45, y=0.12
-- Opponent server ad: x=0.55, y=0.12
-- Player returner deuce: x=0.30, y=0.85 (behind baseline, diagonal)
-- Player returner ad: x=0.70, y=0.85 (behind baseline, diagonal)
+- Opponent serves deuce: x=0.45, y=0.12 (left of center from our view)
+- Opponent serves ad: x=0.55, y=0.12 (right of center from our view)
+- Player returning deuce: x=0.70, y=0.85 (diagonal, behind baseline)
+- Player returning ad: x=0.30, y=0.85 (diagonal, behind baseline)
 
 ## Positions
 Mark starting positions with labels:
