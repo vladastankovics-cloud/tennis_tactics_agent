@@ -119,7 +119,8 @@
       "Bash(cmd /c \"where emulator 2>nul || echo %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\")",
       "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe 2>nul && %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe -list-avds\")",
       "WebFetch(domain:www.svgrepo.com)",
-      "WebFetch(domain:www.youtube.com)"
+      "WebFetch(domain:www.youtube.com)",
+      "Bash(flutter test:*)"
     ]
   }
 }
