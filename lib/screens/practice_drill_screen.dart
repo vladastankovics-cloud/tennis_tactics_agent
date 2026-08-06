@@ -211,8 +211,17 @@ Key positions for SERVING (player serves):
 Key positions for RETURNING (opponent serves):
 - Opponent serves deuce: x=0.45, y=0.12 (left of center from our view)
 - Opponent serves ad: x=0.55, y=0.12 (right of center from our view)
-- Player returning deuce: x=0.70, y=0.85 (diagonal, behind baseline)
-- Player returning ad: x=0.30, y=0.85 (diagonal, behind baseline)
+- Player returning deuce: x=0.70, y=0.85-0.95 (diagonal, at or behind baseline)
+- Player returning ad: x=0.30, y=0.85-0.95 (diagonal, at or behind baseline)
+
+CRITICAL - Serve and Return ball trajectories:
+- Serve ball trajectory should go ALL THE WAY to where returner HITS it (NOT where it bounces!)
+- Returner does NOT move forward to service box - they wait at baseline area
+- Serve ball endpoints (where returner hits):
+  * Second serve: y=0.75-0.82 (player returning) or y=0.18-0.25 (opponent returning)
+  * First/deep serve: y=0.85-0.95 (player returning) or y=0.05-0.15 (opponent returning)
+- Returner makes small lateral adjustments only, NEVER moves forward into service box
+- Example: Opponent serves to player → ball goes from y=0.12 to y=0.80 (NOT to y=0.35 service box!)
 
 ## Positions
 Mark starting positions with labels:
@@ -234,6 +243,11 @@ IMPORTANT movement rules:
    - Ball from O (y=0.20) to P side (y=0.75) → P moves to intercept
 5. Both player AND opponent must move realistically to each incoming ball
 6. Players should position BEHIND the ball to hit it in front of them (not run past the ball)
+7. RETURNS: Returner stays at baseline - ball comes TO them, they don't chase it forward!
+   - Serve ball trajectory endpoint should be at returner's position (y=0.75-0.95 for player, y=0.05-0.25 for opponent)
+   - Returner movement: only small LATERAL adjustments (left/right), NEVER forward into service box
+   - WRONG: serve to y=0.35, then player moves to y=0.35 to hit
+   - CORRECT: serve goes directly to y=0.80, player makes small lateral move to intercept
 
 Shot abbreviations for "shot" field:
 - FH = Forehand, BH = Backhand
@@ -631,8 +645,17 @@ Key positions for SERVING (player serves):
 Key positions for RETURNING (opponent serves):
 - Opponent serves deuce: x=0.45, y=0.12 (left of center from our view)
 - Opponent serves ad: x=0.55, y=0.12 (right of center from our view)
-- Player returning deuce: x=0.70, y=0.85 (diagonal, behind baseline)
-- Player returning ad: x=0.30, y=0.85 (diagonal, behind baseline)
+- Player returning deuce: x=0.70, y=0.85-0.95 (diagonal, at or behind baseline)
+- Player returning ad: x=0.30, y=0.85-0.95 (diagonal, at or behind baseline)
+
+CRITICAL - Serve and Return ball trajectories:
+- Serve ball trajectory should go ALL THE WAY to where returner HITS it (NOT where it bounces!)
+- Returner does NOT move forward to service box - they wait at baseline area
+- Serve ball endpoints (where returner hits):
+  * Second serve: y=0.75-0.82 (player returning) or y=0.18-0.25 (opponent returning)
+  * First/deep serve: y=0.85-0.95 (player returning) or y=0.05-0.15 (opponent returning)
+- Returner makes small lateral adjustments only, NEVER moves forward into service box
+- Example: Opponent serves to player → ball goes from y=0.12 to y=0.80 (NOT to y=0.35 service box!)
 
 ## Positions
 Mark starting positions with labels:
@@ -654,6 +677,11 @@ IMPORTANT movement rules:
    - Ball from O (y=0.20) to P side (y=0.75) → P moves to intercept
 5. Both player AND opponent must move realistically to each incoming ball
 6. Players should position BEHIND the ball to hit it in front of them (not run past the ball)
+7. RETURNS: Returner stays at baseline - ball comes TO them, they don't chase it forward!
+   - Serve ball trajectory endpoint should be at returner's position (y=0.75-0.95 for player, y=0.05-0.25 for opponent)
+   - Returner movement: only small LATERAL adjustments (left/right), NEVER forward into service box
+   - WRONG: serve to y=0.35, then player moves to y=0.35 to hit
+   - CORRECT: serve goes directly to y=0.80, player makes small lateral move to intercept
 
 Shot abbreviations for "shot" field:
 - FH = Forehand, BH = Backhand

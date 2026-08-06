@@ -515,13 +515,50 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
     final travelAngle = math.atan2(dy, dx);
 
     // Determine spin type from shot label
+    // When multiple spin types are mentioned (e.g., "topspin or slice"), use the first one
     final shotLabel = movement.shotLabel?.toUpperCase() ?? '';
     final isServe = shotLabel.contains('SV') || shotLabel.contains('SERVE');
-    final hasTopspin = shotLabel.contains('TS') || shotLabel.contains('TOP') || shotLabel.contains('KICK') || shotLabel.contains('HEAVY');
-    final hasSlice = shotLabel.contains('SL') || shotLabel.contains('SLICE');
-    final hasFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
-    final isDropShot = shotLabel.contains('DROP');
     final isLeftHanded = shotLabel.contains('LEFT') || shotLabel.contains('LH');
+    final isDropShot = shotLabel.contains('DROP');
+    final hasFlat = shotLabel.contains('FL') || shotLabel.contains('FLAT');
+
+    // Find first occurrence of each spin type keyword
+    int topspinIndex = -1;
+    int sliceIndex = -1;
+
+    // Check all topspin keywords
+    for (final keyword in ['TS', 'TOPSPIN', 'TOP', 'KICK', 'HEAVY']) {
+      final idx = shotLabel.indexOf(keyword);
+      if (idx != -1 && (topspinIndex == -1 || idx < topspinIndex)) {
+        topspinIndex = idx;
+      }
+    }
+
+    // Check all slice keywords
+    for (final keyword in ['SL', 'SLICE']) {
+      final idx = shotLabel.indexOf(keyword);
+      if (idx != -1 && (sliceIndex == -1 || idx < sliceIndex)) {
+        sliceIndex = idx;
+      }
+    }
+
+    // Determine which spin type to use based on which appears first
+    // If both are present, use the first mentioned one
+    bool hasTopspin = false;
+    bool hasSlice = false;
+
+    if (topspinIndex != -1 && sliceIndex != -1) {
+      // Both mentioned - use first one
+      if (topspinIndex < sliceIndex) {
+        hasTopspin = true;
+      } else {
+        hasSlice = true;
+      }
+    } else {
+      // Only one or neither mentioned
+      hasTopspin = topspinIndex != -1;
+      hasSlice = sliceIndex != -1;
+    }
 
     // Determine who hit the ball (player is y > 0.5, opponent is y < 0.5)
     final playerHit = movement.fromY > 0.5;
@@ -571,15 +608,19 @@ class _AnimatedTennisCourtPainter extends CustomPainter {
         // Simulate by shifting seam vertically with wrapping
         useVerticalSpin = true;
         if (hasTopspin) {
-          // Topspin: seams flow downward (ball rolling forward)
+          // Topspin: spin direction matches ball travel
+          // Player hits topspin (ball going up): spin bottom to up (negative = upward seam movement)
+          // Opponent hits topspin (ball going down): spin top to bottom (positive = downward seam movement)
           verticalPhase = playerHit
-              ? rotations * 2 * math.pi    // downward flow
-              : -rotations * 2 * math.pi;  // upward flow (from opponent's perspective)
+              ? -rotations * 2 * math.pi   // seams move upward (bottom to top)
+              : rotations * 2 * math.pi;   // seams move downward (top to bottom)
         } else if (hasSlice || isDropShot) {
-          // Slice: seams flow upward (ball spinning backward)
+          // Slice: spin direction opposes ball travel (backspin)
+          // Player hits slice (ball going up): spin top to bottom (positive = downward seam movement)
+          // Opponent hits slice (ball going down): spin bottom to up (negative = upward seam movement)
           verticalPhase = playerHit
-              ? -rotations * 2 * math.pi   // upward flow
-              : rotations * 2 * math.pi;   // downward flow
+              ? rotations * 2 * math.pi    // seams move downward (top to bottom)
+              : -rotations * 2 * math.pi;  // seams move upward (bottom to top)
         }
       }
     }

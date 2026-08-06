@@ -120,7 +120,8 @@
       "Bash(cmd /c \"dir %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe 2>nul && %LOCALAPPDATA%\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe -list-avds\")",
       "WebFetch(domain:www.svgrepo.com)",
       "WebFetch(domain:www.youtube.com)",
-      "Bash(flutter test:*)"
+      "Bash(flutter test:*)",
+      "Bash(del \"C:\\\\Users\\\\Vlada\\\\projects\\\\tennis_tactics_agent\\\\test\\\\widget_test.dart\")"
     ]
   }
 }
